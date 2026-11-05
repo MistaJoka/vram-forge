@@ -227,6 +227,14 @@ class MonthOnlyDates(unittest.TestCase):
         self.assertIn("older", feed["held"][0]["reason"])
 
 
+    def test_tracker_repeating_the_current_price_is_not_a_hold(self) -> None:
+        item = candidate(1000, ("https://gpupoet.com/gpu/5080", 1000), as_of="2026-10")
+        feed, report = merge(previous(), {"items": {"5080": item}}, None, TODAY, RULES)
+        self.assertEqual(feed["items"]["5080"], previous()["items"]["5080"])
+        self.assertEqual(feed["held"], [])
+        self.assertEqual(report["accepted"], [])
+
+
 class DropsUnknownInput(unittest.TestCase):
     def test_unknown_item_id_never_enters_the_feed(self) -> None:
         feed, _ = merged({"<img src=x>": candidate(1100, ("https://newegg.com/a", 1100))})

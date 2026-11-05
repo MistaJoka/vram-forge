@@ -105,6 +105,13 @@ def tracker_vouches(usable: list[dict], price: float, rules: dict) -> bool:
     )
 
 
+def repeats_current_price(item: object, entry: dict) -> bool:
+    """True if a candidate restates the current price with no newer date: nothing to do."""
+    if not isinstance(item, dict) or not isinstance(item.get("as_of"), str):
+        return False
+    return item.get("price") == entry["price"] and item["as_of"] <= entry["as_of"]
+
+
 def review(item: object, previous: dict, today: str, rules: dict) -> tuple[list[dict], str | None]:
     """Check one candidate; return its usable sources and any reason to hold it."""
     if not isinstance(item, dict) or not is_price(item.get("price")):
@@ -202,6 +209,8 @@ def merge(
     for item_id, item in raw_items.items():
         entry = feed["items"].get(item_id)
         if entry is None:
+            continue
+        if repeats_current_price(item, entry):
             continue
         usable, reason = review(item, entry, today, rules)
         if reason:

@@ -1,11 +1,6 @@
 {
  "generated_at": "2026-11-05",
- "held": [
-  {
-   "id": "5080",
-   "reason": "older than the current price"
-  }
- ],
+ "held": [],
  "items": {
   "3090": {
    "as_of": "2026-09",
