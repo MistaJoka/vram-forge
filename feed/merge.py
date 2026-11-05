@@ -11,6 +11,7 @@ CLI: merge.py --prices prices.json --rules feed/rules.json
 """
 
 import argparse
+import calendar
 import copy
 import json
 import math
@@ -23,6 +24,7 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+MONTH_RE = re.compile(r"^\d{4}-\d{2}$")
 REDDIT_PREFIX = "https://www.reddit.com/r/"
 MARKETS = ("used", "new_deal")
 MAX_NAME_LENGTH = 80
@@ -60,22 +62,47 @@ def clean_name(value: object) -> str:
     return printable.strip()[:MAX_NAME_LENGTH] or "source"
 
 
+def date_span(as_of: str) -> tuple[date, date]:
+    """Return the first and last day a date covers; raises ValueError if invalid.
+
+    A month-only date covers the whole month: it is only "future" once the month
+    has not started, and it ages from the month's last day.
+    """
+    if DATE_RE.match(as_of):
+        day = date.fromisoformat(as_of)
+        return day, day
+    if MONTH_RE.match(as_of):
+        first = date.fromisoformat(as_of + "-01")
+        return first, first.replace(day=calendar.monthrange(first.year, first.month)[1])
+    raise ValueError(as_of)
+
+
 def date_problem(as_of: object, previous_as_of: str, today: str, max_age_days: int) -> str | None:
     """Explain why a candidate's date is unusable, or return None if it is fine."""
-    if not isinstance(as_of, str) or not DATE_RE.match(as_of):
+    if not isinstance(as_of, str):
         return "bad date"
     try:
-        parsed = date.fromisoformat(as_of)
+        first, last = date_span(as_of)
     except ValueError:
         return "bad date"
     current = date.fromisoformat(today)
-    if parsed > current:
+    if first > current:
         return "date in the future"
-    if (current - parsed).days > max_age_days:
+    if (current - last).days > max_age_days:
         return "source date past the age limit"
     if as_of < previous_as_of:
         return "older than the current price"
     return None
+
+
+def tracker_vouches(usable: list[dict], price: float, rules: dict) -> bool:
+    """True if a trusted monthly tracker in the sources shows about this price."""
+    return any(
+        allowed_host(source["url"], rules["month_only_hosts"])
+        and is_price(source.get("price"))
+        and abs(source["price"] / price - 1) <= rules["agree_tolerance"]
+        for source in usable
+    )
 
 
 def review(item: object, previous: dict, today: str, rules: dict) -> tuple[list[dict], str | None]:
@@ -94,6 +121,8 @@ def review(item: object, previous: dict, today: str, rules: dict) -> tuple[list[
     if not usable:
         return [], "no allowed source"
     price = item["price"]
+    if MONTH_RE.match(item["as_of"]) and not tracker_vouches(usable, price, rules):
+        return [], "month-only date needs a trusted tracker showing this price"
     jump = abs(price / previous["price"] - 1)
     if jump > rules["max_jump"]:
         return [], f"{jump:.0%} move exceeds the {rules['max_jump']:.0%} limit; review by hand"

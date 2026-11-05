@@ -15,6 +15,7 @@ from feed.merge import merge  # noqa: E402
 TODAY = "2026-11-05"
 RULES = {
     "allowed_hosts": ["newegg.com", "gpupoet.com", "bestbuy.com"],
+    "month_only_hosts": ["gpupoet.com"],
     "single_source_jump": 0.25,
     "max_jump": 0.60,
     "agree_tolerance": 0.10,
@@ -143,6 +144,85 @@ class HoldsBadPrices(unittest.TestCase):
     def test_date_older_than_current_price_is_held(self) -> None:
         october = candidate(1100, ("https://newegg.com/a", 1100), as_of="2026-10-19")
         feed, _ = merge(previous(), {"items": {"5080": october}}, None, "2026-10-29", RULES)
+        self.assertEqual(feed["items"]["5080"]["price"], 1000)
+        self.assertIn("older", feed["held"][0]["reason"])
+
+
+class MonthOnlyDates(unittest.TestCase):
+    """Some trackers publish monthly figures, with no day to report."""
+
+    def run_on(self, item: dict, today: str = TODAY) -> dict:
+        feed, _ = merge(previous(), {"items": {"3090": item}}, None, today, RULES)
+        return feed
+
+    def test_trusted_tracker_month_updates_the_item(self) -> None:
+        item = candidate(2100, ("https://gpupoet.com/gpu/3090", 2100), as_of="2026-10")
+        feed = self.run_on(item)
+        self.assertEqual(feed["items"]["3090"]["price"], 2100)
+        self.assertEqual(feed["items"]["3090"]["as_of"], "2026-10")
+        self.assertEqual(feed["items"]["3090"]["hist"][-1], ["2026-10", 2100])
+        self.assertEqual(feed["held"], [])
+
+    def test_current_month_is_accepted(self) -> None:
+        item = candidate(2100, ("https://gpupoet.com/gpu/3090", 2100), as_of="2026-11")
+        self.assertEqual(self.run_on(item)["items"]["3090"]["price"], 2100)
+
+    def assert_month_held(self, item: dict, fragment: str, today: str = TODAY) -> None:
+        feed = self.run_on(item, today)
+        self.assertEqual(feed["items"]["3090"]["price"], 2000)
+        self.assertEqual(feed["held"][0]["id"], "3090")
+        self.assertIn(fragment, feed["held"][0]["reason"])
+
+    def test_month_from_a_site_not_on_the_tracker_list_is_held(self) -> None:
+        item = candidate(2100, ("https://newegg.com/a", 2100), as_of="2026-10")
+        self.assert_month_held(item, "month-only")
+
+    def test_tracker_showing_a_different_price_does_not_vouch_for_it(self) -> None:
+        item = candidate(
+            2100,
+            ("https://newegg.com/a", 2100),
+            ("https://gpupoet.com/gpu/3090", 1500),
+            as_of="2026-10",
+        )
+        self.assert_month_held(item, "month-only")
+
+    def test_tracker_cited_without_a_price_does_not_vouch_for_it(self) -> None:
+        item = candidate(2100, ("https://gpupoet.com/gpu/3090", None), as_of="2026-10")
+        self.assert_month_held(item, "month-only")
+
+    def test_lookalike_tracker_host_does_not_vouch_for_it(self) -> None:
+        item = candidate(
+            2100,
+            ("https://newegg.com/a", 2100),
+            ("https://evil-gpupoet.com/x", 2100),
+            as_of="2026-10",
+        )
+        self.assert_month_held(item, "month-only")
+
+    def test_future_month_is_held(self) -> None:
+        item = candidate(2100, ("https://gpupoet.com/gpu/3090", 2100), as_of="2026-12")
+        self.assert_month_held(item, "future")
+
+    def test_month_ended_past_the_age_limit_is_held(self) -> None:
+        item = candidate(2100, ("https://gpupoet.com/gpu/3090", 2100), as_of="2026-09")
+        self.assert_month_held(item, "age limit", today="2026-10-25")
+
+    def test_month_age_counts_from_the_end_of_the_month(self) -> None:
+        item = candidate(2100, ("https://gpupoet.com/gpu/3090", 2100), as_of="2026-10")
+        self.assertEqual(self.run_on(item, "2026-11-21")["items"]["3090"]["price"], 2100)
+        self.assert_month_held(item, "age limit", today="2026-11-22")
+
+    def test_impossible_month_is_held(self) -> None:
+        item = candidate(2100, ("https://gpupoet.com/gpu/3090", 2100), as_of="2026-13")
+        self.assert_month_held(item, "bad date")
+
+    def test_year_only_date_is_held(self) -> None:
+        item = candidate(2100, ("https://gpupoet.com/gpu/3090", 2100), as_of="2026")
+        self.assert_month_held(item, "bad date")
+
+    def test_month_cannot_replace_a_price_dated_within_that_month(self) -> None:
+        item = candidate(1100, ("https://gpupoet.com/gpu/5080", 1100), as_of="2026-10")
+        feed, _ = merge(previous(), {"items": {"5080": item}}, None, TODAY, RULES)
         self.assertEqual(feed["items"]["5080"]["price"], 1000)
         self.assertIn("older", feed["held"][0]["reason"])
 

@@ -7,7 +7,7 @@
 | `candidates.schema.json` | The answer shape Claude must return |
 | `extract.py` | Refuses failed runs before they reach the gate |
 | `merge.py` | The gate between candidates and `prices.json` |
-| `rules.json` | Allowed sites and price-move limits |
+| `rules.json` | Allowed sites, trusted monthly trackers, and price-move limits |
 | `com.vramforge.daily.plist` | launchd schedule, 7:30 each morning |
 
 The Reddit signal comes from `gpu_hunter`, in a separate private project. It exports numbers, dates and post links only, with no post text. `merge.py` rebuilds the signal from known fields, so anything else is dropped.

@@ -20,7 +20,7 @@ Find today's typical US price, in USD, for each hardware item below. You are col
 1. Use only pages on these sites: {{ALLOWED_HOSTS}}
 2. Report a price only if you read it on the cited page during this run. Never estimate, average from memory, or carry a price over from what you already know.
 3. Prefer a typical in-stock price over the single cheapest listing, a pre-order, or a price for a bundle or a laptop.
-4. `as_of` is the date printed on the page, always written as YYYY-MM-DD. If the page gives only a month, use the first day of that month. If the page shows no date, use today's date only for a live retailer or tracker listing. Today is {{TODAY}}.
+4. `as_of` is the date printed on the page, written as YYYY-MM-DD. If the page gives only a month, write YYYY-MM and do not invent a day. If the page shows no date, use today's date only for a live retailer or tracker listing. Today is {{TODAY}}.
 5. In `sources`, give every page you relied on, with the price that page shows. Cite a second independent site whenever you can, because a large price change is only accepted when two sites agree.
 6. Leave out any item you could not confirm. Do not include a placeholder.
 

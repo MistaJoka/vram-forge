@@ -6,6 +6,7 @@
     "openclawdc.com", "pcpartpicker.com", "tech-insider.org", "tomshardware.com",
     "videocardz.com", "wccftech.com"
   ],
+  "month_only_hosts": ["bestvaluegpu.com", "capitalandcompute.net", "gpupoet.com"],
   "single_source_jump": 0.25,
   "max_jump": 0.60,
   "agree_tolerance": 0.10,
