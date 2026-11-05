@@ -2,12 +2,8 @@
  "generated_at": "2026-11-05",
  "held": [
   {
-   "id": "3090",
-   "reason": "source date past the age limit"
-  },
-  {
-   "id": "5090",
-   "reason": "source date past the age limit"
+   "id": "5080",
+   "reason": "older than the current price"
   }
  ],
  "items": {
@@ -330,8 +326,46 @@
  },
  "schema": 1,
  "signal": {
-  "generated_at": "2026-11-05T15:40:06.810749+00:00",
-  "items": {},
+  "generated_at": "2026-11-05T15:50:21.715121+00:00",
+  "items": {
+   "3090": {
+    "used": {
+     "high": 1500.0,
+     "last_seen": "2026-11-05",
+     "low": 1500.0,
+     "median": 1500.0,
+     "n": 2,
+     "samples": [
+      {
+       "date": "2026-11-05",
+       "price": 1500.0,
+       "url": "https://www.reddit.com/r/hardwareswap/comments/1xom2b2/usail_h_evga_rtx_3090_ftw3_w_local_cashpaypal_gs/"
+      },
+      {
+       "date": "2026-11-05",
+       "price": 1500.0,
+       "url": "https://www.reddit.com/r/hardwareswap/comments/1xok4zn/usamo_h_3090_fe_w_cash_paypal/"
+      }
+     ]
+    }
+   },
+   "nvme": {
+    "used": {
+     "high": 275.0,
+     "last_seen": "2026-11-05",
+     "low": 275.0,
+     "median": 275.0,
+     "n": 1,
+     "samples": [
+      {
+       "date": "2026-11-05",
+       "price": 275.0,
+       "url": "https://www.reddit.com/r/hardwareswap/comments/1xob4mo/usaca_h_2tb_high_performance_ssd_gen4_100_health/"
+      }
+     ]
+    }
+   }
+  },
   "window_days": 30
  }
 }
