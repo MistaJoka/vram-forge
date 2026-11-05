@@ -1,0 +1,32 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["items"],
+  "properties": {
+    "items": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["price", "as_of", "sources"],
+        "properties": {
+          "price": { "type": "number" },
+          "as_of": { "type": "string" },
+          "sources": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["name", "url", "price"],
+              "properties": {
+                "name": { "type": "string" },
+                "url": { "type": "string" },
+                "price": { "type": "number" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

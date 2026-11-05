@@ -1,0 +1,13 @@
+{
+  "allowed_hosts": [
+    "amazon.com", "apple.com", "bestbuy.com", "bestvaluegpu.com", "bhphotovideo.com",
+    "capitalandcompute.net", "codersera.com", "computingforgeeks.com", "digitalcitizen.life",
+    "ebay.com", "gpupoet.com", "microcenter.com", "newegg.com", "noobfeed.com", "nvidia.com",
+    "openclawdc.com", "pcpartpicker.com", "tech-insider.org", "tomshardware.com",
+    "videocardz.com", "wccftech.com"
+  ],
+  "single_source_jump": 0.25,
+  "max_jump": 0.60,
+  "agree_tolerance": 0.10,
+  "max_age_days": 21
+}

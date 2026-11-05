@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRAM Forge — AI Hardware Calculator &amp; Price Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07090d;--panel:#0d1118;--panel2:#121823;--line:#1e2735;--text:#d8e0ea;--dim:#7d8a9c;
+  --cyan:#3ee6ff;--amber:#ffb547;--green:#4dff9a;--red:#ff5a6e;--violet:#a98bff;--pink:#ff7ad9;
+  --mono:'JetBrains Mono',ui-monospace,monospace;--sans:'Inter',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px}
+body{background-image:radial-gradient(circle at 20% -10%,#0f2a3a55,transparent 50%),radial-gradient(circle at 110% 30%,#2a1a3a44,transparent 45%);min-height:100vh}
+a{color:var(--cyan)}
+header{display:flex;align-items:center;gap:18px;padding:16px 22px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#07090dee;backdrop-filter:blur(6px);z-index:10;flex-wrap:wrap}
+.logo{font-family:var(--mono);font-weight:800;font-size:18px;letter-spacing:.5px}
+.logo span{color:var(--cyan)}
+.logo i{font-style:normal;color:var(--amber);animation:blink 1.2s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+nav{display:flex;gap:6px}
+nav a{font-family:var(--mono);text-decoration:none;color:var(--dim);padding:7px 12px;border:1px solid transparent;border-radius:6px;font-size:13px}
+nav a.on{color:var(--cyan);border-color:#3ee6ff55;background:#3ee6ff12}
+.stamp{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--dim)}
+main{padding:20px 22px 60px;max-width:1400px;margin:0 auto}
+.view{display:none;animation:fade .4s ease}
+.view.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:minmax(300px,380px) 1fr}
+@media(max-width:900px){.g2{grid-template-columns:1fr}}
+.card{background:linear-gradient(180deg,var(--panel),#0a0e14);border:1px solid var(--line);border-radius:12px;padding:16px}
+h2{font-family:var(--mono);font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin:0 0 12px}
+h3{margin:0 0 6px;font-size:15px}
+label{display:block;font-size:12px;color:var(--dim);margin:12px 0 5px;font-family:var(--mono)}
+select,input[type=number],input[type=text]{width:100%;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:8px 10px;font-family:var(--mono);font-size:13px}
+input[type=range]{width:100%;accent-color:var(--cyan)}
+.seg{display:flex;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:3px;gap:3px}
+.seg button{flex:1;background:none;border:0;color:var(--dim);font-family:var(--mono);font-size:12px;padding:7px 4px;border-radius:6px;cursor:pointer}
+.seg button.on{background:#3ee6ff22;color:var(--cyan)}
+.row{display:flex;gap:10px;align-items:center}
+.row>*{flex:1}
+.val{font-family:var(--mono);color:var(--cyan);font-size:12px;float:right}
+details summary{cursor:pointer;font-family:var(--mono);font-size:12px;color:var(--dim);margin-top:14px}
+.arch{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+.big{font-family:var(--mono);font-size:52px;font-weight:800;line-height:1;color:#fff;text-shadow:0 0 24px #3ee6ff55}
+.big small{font-size:18px;color:var(--dim);font-weight:400}
+.verdict{font-family:var(--mono);font-size:13px;margin-top:8px;color:var(--amber)}
+.stack{height:38px;display:flex;border-radius:8px;overflow:hidden;margin:18px 0 10px;background:var(--panel2);border:1px solid var(--line)}
+.stack div{height:100%;transition:width .8s cubic-bezier(.2,.9,.2,1);position:relative;overflow:hidden}
+.stack div::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,#ffffff30,transparent);transform:translateX(-100%);animation:shine 2.6s infinite}
+@keyframes shine{to{transform:translateX(100%)}}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-family:var(--mono);font-size:12px}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend b{width:10px;height:10px;border-radius:2px;display:inline-block}
+.hwgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-top:14px}
+.hw{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;gap:12px;align-items:center;transition:transform .3s,border-color .3s,box-shadow .3s}
+.hw.best{border-color:var(--green);box-shadow:0 0 0 1px #4dff9a55,0 0 22px #4dff9a22}
+.hw.no{opacity:.45}
+.hw:hover{transform:translateY(-2px)}
+.ring{width:62px;height:62px;flex:none}
+.ring circle{fill:none;stroke-width:7}
+.ring .bgc{stroke:#1e2735}
+.ring .fg{stroke-linecap:round;transition:stroke-dashoffset .9s cubic-bezier(.2,.9,.2,1),stroke .4s;transform:rotate(-90deg);transform-origin:50% 50%}
+.ring text{font-family:var(--mono);font-size:13px;fill:var(--text);font-weight:600}
+.hw .nm{font-weight:700;font-size:13px}
+.hw .meta{font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:3px;line-height:1.5}
+.tag{display:inline-block;font-family:var(--mono);font-size:10px;padding:2px 6px;border-radius:4px;margin-top:4px}
+.t-ok{background:#4dff9a1c;color:var(--green)}.t-multi{background:#ffb5471c;color:var(--amber)}.t-no{background:#ff5a6e1c;color:var(--red)}
+.note{font-size:12px;color:var(--dim);line-height:1.55}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:14px}
+.kpi{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:10px 12px}
+.kpi .k{font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--dim)}
+.kpi .v{font-family:var(--mono);font-size:22px;font-weight:800;margin-top:4px}
+#pipe{width:100%;height:300px;display:block;border-radius:10px;background:radial-gradient(ellipse at center,#0f1724,#080b10);border:1px solid var(--line)}
+.comps{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.comp{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:14px;cursor:pointer;transition:border-color .25s,transform .25s}
+.comp:hover,.comp.on{border-color:var(--cyan);transform:translateY(-2px)}
+.comp .ic{font-family:var(--mono);font-size:11px;color:var(--bg);background:var(--cyan);display:inline-block;padding:2px 7px;border-radius:4px;font-weight:800;margin-bottom:8px}
+.comp p{margin:6px 0;font-size:13px;line-height:1.5;color:#b9c4d2}
+.comp .rule{font-family:var(--mono);font-size:11.5px;color:var(--amber)}
+.comp .bn{font-family:var(--mono);font-size:11.5px;color:var(--red)}
+table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px}
+th,td{padding:8px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--dim);font-weight:600;cursor:pointer;user-select:none}
+td input{width:80px;padding:4px 6px;font-size:12px;text-align:right}
+.up{color:var(--red)}.dn{color:var(--green)}
+.tablewrap{overflow-x:auto}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.chip{font-family:var(--mono);font-size:11.5px;padding:5px 10px;border-radius:20px;border:1px solid var(--line);background:var(--panel2);color:var(--dim);cursor:pointer;display:flex;align-items:center;gap:6px}
+.chip b{width:8px;height:8px;border-radius:50%}
+.chip.on{color:var(--text);border-color:#ffffff40}
+#chart{width:100%;height:380px;display:block}
+.tip{position:fixed;pointer-events:none;background:#0d1118f2;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-family:var(--mono);font-size:12px;display:none;z-index:50;box-shadow:0 8px 30px #000a}
+.btn{background:#3ee6ff18;color:var(--cyan);border:1px solid #3ee6ff55;border-radius:7px;padding:7px 12px;font-family:var(--mono);font-size:12px;cursor:pointer}
+.btn:hover{background:#3ee6ff2a}
+.ticker{overflow:hidden;white-space:nowrap;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:#0a0e14;font-family:var(--mono);font-size:12px;padding:7px 0}
+.ticker div{display:inline-block;animation:tick 60s linear infinite;padding-left:100%}
+.ticker span{margin-right:36px}
+@keyframes tick{to{transform:translateX(-100%)}}
+.sources li{margin:4px 0;font-size:12px;color:var(--dim)}
+.warn{border-left:3px solid var(--amber);padding:8px 12px;background:#ffb5470d;font-size:12.5px;color:#e6d3b0;border-radius:0 8px 8px 0;margin-bottom:14px}
+.g3{grid-template-columns:1fr 390px}
+@media(max-width:1000px){.g3{grid-template-columns:1fr}}
+.stage{padding:0!important;position:relative;overflow:hidden;min-height:640px}
+#b_view{position:absolute;inset:0;cursor:grab}
+#b_view:active{cursor:grabbing}
+#b_view canvas{display:block}
+#b_label{position:absolute;left:0;top:0;pointer-events:none;font-family:var(--mono);font-size:12px;color:#fff;display:none;transition:transform .08s linear}
+#b_label div{position:absolute;left:14px;top:-34px;white-space:nowrap;background:#07090dd9;border:1px solid var(--cyan);padding:4px 9px;border-radius:6px;box-shadow:0 0 18px #3ee6ff44}
+#b_label i{position:absolute;left:-5px;top:-5px;width:10px;height:10px;border-radius:50%;background:var(--cyan);box-shadow:0 0 0 0 #3ee6ffaa;animation:ping 1.4s infinite}
+@keyframes ping{to{box-shadow:0 0 0 16px #3ee6ff00}}
+.b_hud{position:absolute;top:12px;left:14px;font-family:var(--mono);font-size:11px;color:var(--dim)}
+.b_bar{position:absolute;left:12px;right:12px;bottom:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#07090dcc;border:1px solid var(--line);border-radius:10px;padding:8px 10px;backdrop-filter:blur(4px)}
+.b_bar .btn{padding:6px 10px}
+.b_bar label{margin:0;display:flex;align-items:center;gap:8px;flex:1;min-width:180px}
+.btn.hot{background:#4dff9a1c;color:var(--green);border-color:#4dff9a66}
+.btn.red{background:#ff5a6e1c;color:var(--red);border-color:#ff5a6e66}
+#b_err{display:none;position:absolute;inset:0;padding:40px;font-family:var(--mono);color:var(--red)}
+.stepn{font-family:var(--mono);font-size:12px;color:var(--dim);display:flex;justify-content:space-between;align-items:center}
+.badge{font-family:var(--mono);font-size:10px;font-weight:800;padding:3px 8px;border-radius:4px;letter-spacing:1px}
+.b-build{background:#4dff9a22;color:var(--green)}.b-tear{background:#ff5a6e22;color:var(--red)}
+#b_title{font-size:20px;margin:8px 0 6px}
+#b_text{font-size:13.5px;line-height:1.55;color:#c5cfdb;min-height:60px}
+.b_box{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-top:10px;font-size:12.5px;line-height:1.5}
+.b_box b{font-family:var(--mono);font-size:10px;letter-spacing:1px;display:block;margin-bottom:3px}
+#b_steps{list-style:none;padding:0;margin:12px 0 0;font-family:var(--mono);font-size:12px;max-height:250px;overflow:auto}
+#b_steps li{padding:5px 8px;border-radius:5px;cursor:pointer;color:var(--dim);display:flex;gap:8px}
+#b_steps li.done{color:#9fb0c3}
+#b_steps li.done::before{content:"✓";color:var(--green)}
+#b_steps li:not(.done)::before{content:"○"}
+#b_steps li.cur{background:#3ee6ff14;color:var(--cyan)}
+#b_steps li:hover{background:#ffffff08}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">VRAM<span>FORGE</span><i>_</i></div>
+  <nav>
+    <a href="#calc" data-v="calc">01 Calculator</a>
+    <a href="#hardware" data-v="hardware">02 Hardware Lab</a>
+    <a href="#prices" data-v="prices">03 Prices</a>
+    <a href="#build" data-v="build">04 3D Build</a>
+  </nav>
+  <div class="stamp" id="stamp">price snapshot: Aug–Oct 2026 · US street · USD</div>
+</header>
+<div class="ticker"><div id="ticker"></div></div>
+<main>
+
+<!-- ================= CALCULATOR ================= -->
+<section class="view" id="v-calc">
+  <div class="grid g2">
+    <div class="card">
+      <h2>// workload</h2>
+      <label>Mode</label>
+      <div class="seg" id="mode">
+        <button data-m="infer" class="on">Inference</button>
+        <button data-m="lora">LoRA</button>
+        <button data-m="qlora">QLoRA</button>
+        <button data-m="full">Full FT</button>
+      </div>
+      <label>Model</label>
+      <select id="model"></select>
+      <label>Weight precision <span class="val" id="bpwv"></span></label>
+      <select id="quant"></select>
+      <label>KV cache precision</label>
+      <div class="seg" id="kvq">
+        <button data-k="FP16" class="on">FP16</button>
+        <button data-k="Q8">Q8</button>
+        <button data-k="Q4">Q4</button>
+      </div>
+      <label>Context length <span class="val" id="ctxv"></span></label>
+      <input type="range" id="ctx" min="0" max="8" step="1" value="3">
+      <label>Concurrent sequences / batch <span class="val" id="batv"></span></label>
+      <input type="range" id="bat" min="1" max="32" step="1" value="1">
+      <details>
+        <summary>architecture (editable — change any stat)</summary>
+        <div class="arch">
+          <div><label>Total params (B)</label><input type="number" id="a_p" step="0.1"></div>
+          <div><label>Active params (B)</label><input type="number" id="a_a" step="0.1"></div>
+          <div><label>Layers</label><input type="number" id="a_L"></div>
+          <div><label>KV heads</label><input type="number" id="a_kv"></div>
+          <div><label>Head dim</label><input type="number" id="a_hd"></div>
+          <div><label>Hidden size</label><input type="number" id="a_h"></div>
+        </div>
+      </details>
+    </div>
+    <div class="card">
+      <h2>// memory required</h2>
+      <div class="big"><span id="total">0</span> <small>GB</small></div>
+      <div class="verdict" id="verdict"></div>
+      <div class="stack" id="stack"></div>
+      <div class="legend" id="legend"></div>
+      <div class="kpis" id="kpis"></div>
+      <h2 style="margin-top:22px">// what runs it — sorted by cost to run</h2>
+      <div class="hwgrid" id="hwgrid"></div>
+      <p class="note" style="margin-top:14px">Estimates: weights = params × bits/8 · KV = 2 × layers × KV heads × head dim × context × batch × bytes · decode tok/s ≈ memory bandwidth × efficiency ÷ bytes read per token (active weights + KV). MoE models need memory for <b>all</b> params but read only <b>active</b> params per token — why they fly on unified-memory boxes. Sliding-window attention (gpt-oss, Gemma) makes real KV smaller; this shows the upper bound. Expect ±15%.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= HARDWARE LAB ================= -->
+<section class="view" id="v-hardware">
+  <div class="grid g2">
+    <div class="card">
+      <h2>// bottleneck simulator — drag the stats</h2>
+      <label>Test model @ Q4_K_M, 8K ctx</label>
+      <select id="s_model"></select>
+      <label>Start from real hardware</label>
+      <select id="s_preset"></select>
+      <label>GPU VRAM <span class="val" id="s_vramv"></span></label><input type="range" id="s_vram" min="4" max="192" step="2">
+      <label>VRAM bandwidth <span class="val" id="s_bwv"></span></label><input type="range" id="s_bw" min="100" max="2000" step="10">
+      <label>GPU compute (FP16 TFLOPS) <span class="val" id="s_tfv"></span></label><input type="range" id="s_tf" min="10" max="400" step="5">
+      <label>System RAM <span class="val" id="s_ramv"></span></label><input type="range" id="s_ram" min="16" max="256" step="16">
+      <label>RAM bandwidth (CPU offload) <span class="val" id="s_rbwv"></span></label><input type="range" id="s_rbw" min="40" max="400" step="5">
+      <label>PCIe link</label>
+      <div class="seg" id="s_pcie"><button data-p="16">Gen3 x16</button><button data-p="32" class="on">Gen4 x16</button><button data-p="64">Gen5 x16</button></div>
+      <label>NVMe read <span class="val" id="s_nvv"></span></label><input type="range" id="s_nv" min="0.5" max="14" step="0.5">
+    </div>
+    <div class="card">
+      <h2>// data path — particles move at relative bandwidth</h2>
+      <canvas id="pipe"></canvas>
+      <div class="kpis" id="skpis"></div>
+      <p class="note" id="sverdict" style="margin-top:12px"></p>
+    </div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <h2>// what each component does for AI (click → highlights its node)</h2>
+    <div class="comps" id="comps"></div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <h2>// spec &amp; price sheet — editable, feeds calculator + charts <button class="btn" id="resetHW" style="float:right">reset my edits</button></h2>
+    <div class="tablewrap"><table id="spec"></table></div>
+    <p class="note">Edit memory, bandwidth or price to model a deal you found (e.g. a local used listing). Saved in this browser only.</p>
+  </div>
+</section>
+
+<!-- ================= PRICES ================= -->
+<section class="view" id="v-prices">
+  <div class="warn" id="feedWarn">Built-in snapshot: the daily price feed did not load. Data points are from public trackers (sources below), mostly Aug–Oct 2026. Lines connect published points; they are not daily data.</div>
+  <div class="card">
+    <h2>// price history</h2>
+    <div class="row" style="margin-bottom:10px;flex-wrap:wrap">
+      <div class="seg" id="metric" style="max-width:460px">
+        <button data-mt="usd" class="on">Price $</button>
+        <button data-mt="pct">% of launch</button>
+        <button data-mt="pergb">$ / GB memory</button>
+      </div>
+    </div>
+    <div class="chips" id="chips"></div>
+    <canvas id="chart"></canvas>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <h2>// current prices — click headers to sort</h2>
+    <div class="tablewrap"><table id="snap"></table></div>
+    <div id="held" class="note" style="display:none;margin-top:10px"></div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <h2>// reddit market signal — asking prices, not sold prices</h2>
+    <div class="tablewrap" id="signal"></div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <h2>// read of the market</h2>
+    <p class="note" style="font-size:13px;color:#c5cfdb">2026 has been a memory-shortage year. DRAM/NAND fabs shifted to HBM for datacenters, so consumer DDR5, SSDs and VRAM-heavy GPUs rose together. Nvidia kept MSRPs unchanged; the increase shows up as street-price markup. The highest-VRAM consumer parts (5090, used 3090/4090, 128GB unified boxes) rose the most because AI buyers compete for them. <b>Metric that matters: $/GB of VRAM at your target model size, then bandwidth.</b></p>
+    <h2 style="margin-top:16px">// sources</h2>
+    <ul class="sources" id="sources"></ul>
+  </div>
+</section>
+<!-- ================= 3D BUILD ================= -->
+<section class="view" id="v-build">
+  <div class="grid g3">
+    <div class="card stage">
+      <div id="b_view"></div>
+      <div id="b_label"><i></i><div id="b_ltxt"></div></div>
+      <div class="b_hud">drag = orbit · scroll = zoom · click a part = details</div>
+      <div id="b_err">3D engine failed to load (three.js from cdnjs). Check connection and reload.</div>
+      <div class="b_bar">
+        <button class="btn hot" id="b_play">▶ Build</button>
+        <button class="btn red" id="b_tear">⏏ Teardown</button>
+        <button class="btn" id="b_prev">◀</button>
+        <button class="btn" id="b_next">▶</button>
+        <label class="note">explode <input type="range" id="b_ex" min="0" max="1" step="0.01" value="0"></label>
+        <button class="btn" id="b_cam">⟲ view</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="stepn"><span id="b_n">STEP 00/13</span><span class="badge b-build" id="b_mode">BUILD</span></div>
+      <h3 id="b_title"></h3>
+      <div id="b_text"></div>
+      <div class="b_box"><b style="color:var(--cyan)">ROLE IN AI</b><span id="b_ai"></span></div>
+      <div class="b_box"><b style="color:var(--amber)">PRO TIP</b><span id="b_tip"></span></div>
+      <ol id="b_steps"></ol>
+      <h2 style="margin-top:16px">// card in this build</h2>
+      <select id="b_gpu"></select>
+      <div class="kpis" id="b_spec" style="grid-template-columns:1fr 1fr"></div>
+    </div>
+  </div>
+</section>
+</main>
+<div class="tip" id="tip"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+"use strict";
+/* ============ DATA ============ */
+const QUANTS={"FP16 / BF16":16,"FP8":8,"Q8_0":8.5,"Q6_K":6.56,"Q5_K_M":5.69,"Q4_K_M":4.85,"MXFP4 / NVFP4":4.25,"Q3_K_M":3.91,"Q2_K":3.35};
+const KVB={FP16:2,Q8:1.06,Q4:0.56};
+const CTX=[2048,4096,8192,16384,32768,65536,131072,200000,262144];
+const MODELS=[
+ {id:"llama8",name:"Llama 3.1 8B",p:8.03,a:8.03,L:32,kv:8,hd:128,h:4096},
+ {id:"qwen14",name:"Qwen3 14B",p:14.8,a:14.8,L:40,kv:8,hd:128,h:5120},
+ {id:"oss20",name:"gpt-oss-20b (MoE)",p:20.9,a:3.6,L:24,kv:8,hd:64,h:2880},
+ {id:"gemma27",name:"Gemma 3 27B",p:27.4,a:27.4,L:62,kv:16,hd:128,h:5376},
+ {id:"qwen30",name:"Qwen3 30B-A3B (MoE)",p:30.5,a:3.3,L:48,kv:4,hd:128,h:2048},
+ {id:"qwen32",name:"Qwen3 32B",p:32.8,a:32.8,L:64,kv:8,hd:128,h:5120},
+ {id:"llama70",name:"Llama 3.3 70B",p:70.6,a:70.6,L:80,kv:8,hd:128,h:8192},
+ {id:"oss120",name:"gpt-oss-120b (MoE)",p:116.8,a:5.1,L:36,kv:8,hd:64,h:2880},
+ {id:"llama405",name:"Llama 3.1 405B",p:405,a:405,L:126,kv:8,hd:128,h:16384}
+];
+// kind: gpu (discrete, stackable) | unified (single box) | part (non-accelerator)
+const HW0=[
+ {id:"5060ti",name:"RTX 5060 Ti 16GB",kind:"gpu",mem:16,bw:448,tf:47,tdp:180,msrp:429,price:805,col:"#4dff9a",when:"2026-08",src:2,
+  hist:[["2025-04",429],["2026-02",540],["2026-06",570],["2026-08",805]]},
+ {id:"5070ti",name:"RTX 5070 Ti",kind:"gpu",mem:16,bw:896,tf:88,tdp:300,msrp:749,price:1100,col:"#7fd4ff",when:"2026-08",src:2,
+  hist:[["2025-02",749],["2026-02",950],["2026-06",1100],["2026-08",1100]]},
+ {id:"5080",name:"RTX 5080",kind:"gpu",mem:16,bw:960,tf:113,tdp:360,msrp:999,price:1596,col:"#a98bff",when:"2026-10",src:3,
+  hist:[["2025-01",999],["2026-02",1400],["2026-08",1500],["2026-10",1596]]},
+ {id:"3090",name:"RTX 3090 (used)",kind:"gpu",mem:24,bw:936,tf:71,tdp:350,msrp:1499,price:1463,col:"#ffb547",when:"2026-09",src:0,
+  hist:[["2020-09",1499],["2025-06",900],["2026-05",1050],["2026-07",1275],["2026-08",1250],["2026-09",1463]]},
+ {id:"4090",name:"RTX 4090 (used)",kind:"gpu",mem:24,bw:1008,tf:165,tdp:450,msrp:1599,price:2200,col:"#ff7ad9",when:"2026",src:4,
+  hist:[["2022-10",1599],["2026-03",2200]]},
+ {id:"5090",name:"RTX 5090",kind:"gpu",mem:32,bw:1792,tf:210,tdp:575,msrp:1999,price:4930,col:"#ff5a6e",when:"2026-09",src:1,
+  hist:[["2025-01",1999],["2026-01",3016],["2026-02",3600],["2026-04",3777],["2026-08",4830],["2026-09",4930]]},
+ {id:"pro6000",name:"RTX Pro 6000 96GB",kind:"gpu",mem:96,bw:1792,tf:250,tdp:600,msrp:8500,price:10000,col:"#ffffff",when:"2026-06",src:6,
+  hist:[["2025-10",8500],["2026-06",10000]]},
+ {id:"strix",name:"Ryzen AI Max+ 395 128GB box",kind:"unified",mem:128,usable:110,bw:256,tf:59,tdp:140,msrp:2099,price:3500,col:"#ff8a3d",when:"2026-10",src:5,
+  hist:[["2025-10",2099],["2026-04",3299],["2026-10",3500]]},
+ {id:"spark",name:"DGX Spark 128GB",kind:"unified",mem:128,usable:115,bw:273,tf:100,tdp:240,msrp:3999,price:4699,col:"#76b900",when:"2026-06",src:6,
+  hist:[["2025-10",3999],["2026-06",4699]]},
+ {id:"macm5",name:"Mac Studio M5 Max 128GB",kind:"unified",mem:128,usable:104,bw:614,tf:40,tdp:200,msrp:5099,price:5099,col:"#c9d1d9",when:"2026-10",src:5,
+  hist:[["2026-10",5099]]},
+ {id:"ddr5",name:"DDR5 32GB kit (2×16)",kind:"part",mem:32,bw:96,tf:0,tdp:10,msrp:90,price:450,col:"#3ee6ff",when:"2026-10",src:7,
+  hist:[["2025-01",100],["2025-07",72],["2025-11",330],["2026-10",450]]},
+ {id:"nvme",name:"2TB Gen4 NVMe",kind:"part",mem:2000,bw:7,tf:0,tdp:8,msrp:129,price:329,col:"#f2e863",when:"2026-10",src:8,
+  hist:[["2025-10",129],["2026-08",302],["2026-10",329]]}
+];
+const SOURCES=[
+ ["openclawdc — used RTX 3090 ~$1,463 eBay avg (Sep 24 2026), $1,202–1,296 (Aug)","https://openclawdc.com/blog/is-a-used-rtx-3090-worth-it-local-llm/"],
+ ["capitalandcompute — RTX 5090 $4,830 street vs $1,999 MSRP (Aug 2), sold out ~$5,000 (Sep)","https://capitalandcompute.net/gpu-prices/nvidia/"],
+ ["digitalcitizen — RTX 50 median US prices, Jun→Aug 2026","https://www.digitalcitizen.life/nvidia-rtx-5060-ti-16gb-median-price-reaches-805-as-rtx-50-series-costs-keep-rising/"],
+ ["gpupoet — RTX 5080 deals from $1,596 (Oct 2026); RTX 5090 monthly lows Jan–Apr 2026","https://gpupoet.com/gpu/learn/price/october-2026/nvidia-geforce-rtx-5080"],
+ ["tech-insider — used RTX 4090 ~$2,200 eBay sold avg","https://tech-insider.org/?p=15714"],
+ ["openclawdc — Ryzen AI Max+ 395 128GB box $3,499.99 (Oct 2026), Mac Studio M5 Max 128GB $5,099","https://openclawdc.com/blog/ryzen-ai-max-395-alternative-local-llm/"],
+ ["wccftech / codersera — DGX Spark $4,679–4,699; RTX Pro 6000 ~$10k (Jun 2026)","https://codersera.com/blog/local-llm-hardware-showdown-june-2026/"],
+ ["tech-insider (via Tom's Hardware) — 32GB DDR5-6000 $449.97 (Oct 14 2026), historical low ~$72","https://tech-insider.org/ddr5-ram-price-450-ai-shortage-2026/"],
+ ["computingforgeeks — 2TB NVMe: 990 EVO Plus $129 (Oct 2025) → $365.99; SN7100 $329 (Oct 27 2026)","https://computingforgeeks.com/?p=178451"],
+ ["noobfeed — Feb 2026 GPU street prices (5070 Ti $950, 5080 $1,400, 5090 $3,600)","https://www.noobfeed.com/articles/gpu-and-ddr5-ram-prices-surge-in-2026"]
+];
+
+/* ============ STATE + PERSIST ============ */
+const EDIT_KEY="vramforge_edits",EDIT_FIELDS=["mem","bw","price","tf"];
+let HW;
+function readEdits(){try{const o=JSON.parse(localStorage.getItem(EDIT_KEY));return o&&typeof o==="object"?o:{};}catch(e){return {};}}
+// HW is HW0 (snapshot or feed) plus only what this visitor changed, so an edit to one item never freezes the rest.
+function rebuildHW(){HW=JSON.parse(JSON.stringify(HW0));const o=readEdits();
+ HW.forEach(h=>{const e=o[h.id];if(!e)return;EDIT_FIELDS.forEach(f=>{if(isPrice(e[f]))h[f]=e[f];});if(h.kind==="unified"&&isPrice(e.mem))h.usable=e.mem*0.86;});}
+function saveHW(){try{const o={};HW.forEach(h=>{const b=HW0.find(x=>x.id===h.id);EDIT_FIELDS.forEach(f=>{if(h[f]!==b[f])(o[h.id]=o[h.id]||{})[f]=h[f];});});localStorage.setItem(EDIT_KEY,JSON.stringify(o));}catch(e){}}
+function isPrice(v){return typeof v==="number"&&Number.isFinite(v)&&v>0;}
+function esc(v){return String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function isHttps(u,prefix="https://"){if(typeof u!=="string"||!u.startsWith(prefix))return false;try{return new URL(u).protocol==="https:";}catch(e){return false;}}
+const nowT=()=>{const d=new Date();return d.getUTCFullYear()+d.getUTCMonth()/12;};
+rebuildHW();
+const $=s=>document.querySelector(s);
+const fmt=(n,d=1)=>Number(n).toLocaleString(undefined,{maximumFractionDigits:d,minimumFractionDigits:d});
+const usd=n=>"$"+Math.round(n).toLocaleString();
+const st={mode:"infer",model:MODELS[0],quant:"Q4_K_M",kv:"FP16",ctxI:3,bat:1,arch:{...MODELS[0]}};
+
+/* ============ TWEEN ============ */
+function tween(el,to,d=1){const from=parseFloat(el.dataset.v||0);el.dataset.v=to;const t0=performance.now(),D=700;
+ function f(t){const k=Math.min(1,(t-t0)/D),e=1-Math.pow(1-k,3);el.textContent=fmt(from+(to-from)*e,d);if(k<1)requestAnimationFrame(f);}requestAnimationFrame(f);}
+
+/* ============ CORE MATH ============ */
+function memCalc(s){
+ const A=s.arch,ctx=CTX[s.ctxI],b=s.bat,bpw=QUANTS[s.quant];
+ let w=0,kv=0,act=0,opt=0;
+ const ckv=2*A.L*A.kv*A.hd*ctx*b*KVB[s.kv]/1e9;
+ if(s.mode==="infer"){w=A.p*bpw/8;kv=ckv;act=A.h*Math.min(ctx,8192)*Math.min(b,8)*24/1e9;}
+ else{
+  const ac=b*Math.min(ctx,8192)*A.h*A.L*4/1e9; // grad-checkpointed activations
+  if(s.mode==="lora"){w=A.p*2;opt=A.p*0.01*16;act=ac;}
+  if(s.mode==="qlora"){w=A.p*4.5/8;opt=A.p*0.01*16;act=ac;}
+  if(s.mode==="full"){w=A.p*2;opt=A.p*14;act=ac;}
+ }
+ const ov=0.6+0.03*w;
+ return {w,kv,act,opt,ov,total:w+kv+act+opt+ov,bpw:s.mode==="infer"?bpw:(s.mode==="qlora"?4.5:16)};
+}
+function fitOn(h,m,s){
+ if(h.kind==="part")return null;
+ const usable=h.kind==="unified"?h.usable*(h.mem/128):h.mem*0.95;
+ let n=1;
+ if(m.total>usable){ if(h.kind==="unified")return {n:0,usable,pct:m.total/usable};
+   n=Math.ceil(m.total/(usable-0.4)); if(n>8)return {n:0,usable,pct:m.total/usable}; }
+ let tps=null;
+ if(s.mode==="infer"){const bytes=s.arch.a*m.bpw/8+m.kv/s.bat;tps=h.bw*(h.kind==="unified"?0.65:0.7)/bytes;}
+ return {n,usable,pct:m.total/(usable*n),cost:n*h.price,tps};
+}
+
+/* ============ CALCULATOR UI ============ */
+MODELS.forEach(m=>$("#model").insertAdjacentHTML("beforeend",`<option value="${m.id}">${m.name} — ${m.p}B${m.a<m.p?" ("+m.a+"B active)":""}</option>`));
+$("#model").insertAdjacentHTML("beforeend",`<option value="custom">Custom (edit architecture)</option>`);
+Object.keys(QUANTS).forEach(q=>$("#quant").insertAdjacentHTML("beforeend",`<option ${q==="Q4_K_M"?"selected":""}>${q}</option>`));
+const ARCH=["p","a","L","kv","hd","h"];
+function fillArch(){ARCH.forEach(k=>$("#a_"+k).value=st.arch[k]);}
+function seg(id,attr,cb){$(id).addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
+ $(id).querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));cb(b.dataset[attr]);});}
+seg("#mode","m",v=>{st.mode=v;renderCalc();});
+seg("#kvq","k",v=>{st.kv=v;renderCalc();});
+$("#model").onchange=e=>{const m=MODELS.find(x=>x.id===e.target.value);if(m){st.arch={...m};fillArch();}
+ if(st.arch.id==="oss120"||st.arch.id==="oss20"){$("#quant").value="MXFP4 / NVFP4";st.quant="MXFP4 / NVFP4";}
+ if(e.target.value==="custom")document.querySelector("details").open=true;renderCalc();};
+$("#quant").onchange=e=>{st.quant=e.target.value;renderCalc();};
+$("#ctx").oninput=e=>{st.ctxI=+e.target.value;renderCalc();};
+$("#bat").oninput=e=>{st.bat=+e.target.value;renderCalc();};
+ARCH.forEach(k=>$("#a_"+k).oninput=e=>{const v=parseFloat(e.target.value);if(v>0){st.arch[k]=v;if(k==="p"&&st.arch.a>v)st.arch.a=v;$("#model").value="custom";renderCalc();}});
+
+const SEGS=[["w","Weights","#3ee6ff"],["kv","KV cache","#a98bff"],["act","Activations","#ffb547"],["opt","Grads + optimizer","#ff7ad9"],["ov","Runtime overhead","#5b6778"]];
+SEGS.forEach(([k,,c])=>$("#stack").insertAdjacentHTML("beforeend",`<div id="sg_${k}" style="background:${c};width:0"></div>`));
+
+function ring(pct,col){const r=26,C=2*Math.PI*r,p=Math.min(pct,1);
+ return `<svg class="ring" viewBox="0 0 62 62"><circle class="bgc" cx="31" cy="31" r="${r}"/><circle class="fg" cx="31" cy="31" r="${r}" stroke="${col}" stroke-dasharray="${C}" stroke-dashoffset="${C}" data-off="${C*(1-p)}"/><text x="31" y="35" text-anchor="middle">${Math.round(pct*100)}%</text></svg>`;}
+
+function renderCalc(){
+ const tr=st.mode!=="infer";
+ $("#quant").disabled=tr;$("#kvq").style.opacity=tr?.35:1;
+ $("#ctxv").textContent=(CTX[st.ctxI]/1024).toFixed(0)+"K tokens";$("#batv").textContent=st.bat;
+ $("#bpwv").textContent=tr?(st.mode==="qlora"?"NF4 base":"BF16 base"):QUANTS[st.quant]+" bits/weight";
+ const m=memCalc(st);
+ tween($("#total"),m.total,1);
+ SEGS.forEach(([k,n,c])=>{$("#sg_"+k).style.width=(m[k]/m.total*100)+"%";$("#sg_"+k).title=`${n}: ${fmt(m[k])} GB`;});
+ $("#legend").innerHTML=SEGS.filter(([k])=>m[k]>0.005).map(([k,n,c])=>`<span><b style="background:${c}"></b>${n} ${fmt(m[k])} GB</span>`).join("");
+ // hardware
+ const rows=HW.filter(h=>h.kind!=="part").map(h=>({h,f:fitOn(h,m,st)})).sort((a,b)=>{
+   const ca=a.f.n?a.f.cost:1e9+a.f.pct,cb=b.f.n?b.f.cost:1e9+b.f.pct;return ca-cb;});
+ const best=rows.find(r=>r.f.n);
+ $("#hwgrid").innerHTML=rows.map(({h,f})=>{
+   const ok=f.n>0,col=!ok?"#ff5a6e":f.pct>0.9?"#ffb547":"#4dff9a";
+   const tag=!ok?`<span class="tag t-no">won't fit${h.kind==="gpu"?" (>8 cards)":""}</span>`:f.n===1?`<span class="tag t-ok">fits ×1</span>`:`<span class="tag t-multi">needs ×${f.n}</span>`;
+   return `<div class="hw ${ok?"":"no"} ${best&&best.h===h?"best":""}">${ring(f.pct,col)}<div><div class="nm">${h.name}</div>
+   <div class="meta">${h.mem}GB · ${h.bw} GB/s${ok?`<br>${usd(f.cost)}${f.tps?` · ~${fmt(f.tps,0)} tok/s`:""}`:""}</div>${tag}</div></div>`;}).join("");
+ requestAnimationFrame(()=>requestAnimationFrame(()=>document.querySelectorAll("#hwgrid .fg").forEach(c=>c.style.strokeDashoffset=c.dataset.off)));
+ // verdict + kpis
+ $("#verdict").textContent=best?`▸ cheapest path: ${best.f.n>1?best.f.n+"× ":""}${best.h.name} — ${usd(best.f.cost)}`:"▸ nothing in the sheet runs this — drop precision, context or model size";
+ const dollarsPerGB=best?best.f.cost/m.total:0;
+ const kpis=[["Weights",fmt(m.w)+" GB"],["KV cache",fmt(m.kv,2)+" GB"],["Context",(CTX[st.ctxI]).toLocaleString()],
+  [tr?"Trainable":"Bytes/token",tr?(st.mode==="full"?"100%":"~1% (adapters)"):fmt(st.arch.a*m.bpw/8+m.kv/st.bat,2)+" GB"],
+  ["Cheapest $ / needed GB",best?usd(dollarsPerGB):"—"]];
+ $("#kpis").innerHTML=kpis.map(([k,v])=>`<div class="kpi"><div class="k">${k}</div><div class="v">${v}</div></div>`).join("");
+}
+
+/* ============ HARDWARE LAB ============ */
+const sim={vram:24,bw:936,tf:71,ram:64,rbw:80,pcie:32,nv:7,model:MODELS[5],hi:null};
+MODELS.forEach(m=>$("#s_model").insertAdjacentHTML("beforeend",`<option value="${m.id}" ${m.id==="qwen32"?"selected":""}>${m.name}</option>`));
+function fillPresets(){$("#s_preset").innerHTML=`<option value="">— pick —</option>`+HW.filter(h=>h.kind!=="part").map(h=>`<option value="${h.id}">${h.name}</option>`).join("");}
+fillPresets();
+const SL={vram:["#s_vram",v=>v+" GB"],bw:["#s_bw",v=>v+" GB/s"],tf:["#s_tf",v=>v+" TF"],ram:["#s_ram",v=>v+" GB"],rbw:["#s_rbw",v=>v+" GB/s"],nv:["#s_nv",v=>v+" GB/s"]};
+function syncSliders(){Object.entries(SL).forEach(([k,[id,f]])=>{$(id).value=sim[k];$(id+"v").textContent=f(sim[k]);});}
+Object.entries(SL).forEach(([k,[id,f]])=>$(id).oninput=e=>{sim[k]=+e.target.value;$(id+"v").textContent=f(sim[k]);renderSim();});
+$("#s_model").onchange=e=>{sim.model=MODELS.find(m=>m.id===e.target.value);renderSim();};
+$("#s_preset").onchange=e=>{const h=HW.find(x=>x.id===e.target.value);if(!h)return;
+ sim.vram=h.kind==="unified"?h.usable:h.mem;sim.bw=h.bw;sim.tf=h.tf||sim.tf;if(h.kind==="unified"){sim.rbw=h.bw;}syncSliders();renderSim();};
+seg("#s_pcie","p",v=>{sim.pcie=+v;renderSim();});
+
+function simCalc(){
+ const M=sim.model,bpw=4.85,ctx=8192;
+ const w=M.p*bpw/8,kv=2*M.L*M.kv*M.hd*ctx*2/1e9,total=w+kv+0.6+0.03*w;
+ const gpuCap=Math.max(0,sim.vram*0.95-kv-0.6);
+ const onGPU=Math.min(1,gpuCap/w),offGB=w*(1-onGPU);
+ const fitsRam=offGB<=sim.ram*0.85;
+ const act=M.a*bpw/8; // bytes read per token
+ const tG=act*onGPU/(sim.bw*0.7)+kv/(sim.bw*0.7),tC=act*(1-onGPU)/(sim.rbw*0.7);
+ const tps=fitsRam?1/(tG+tC):0;
+ const prefill=sim.tf*1e12*0.35/(2*M.a*1e9);
+ const load=w/Math.min(sim.nv,sim.pcie);
+ const maxB=(sim.vram*0.92-1)/(bpw/8);
+ return {w,kv,total,onGPU,offGB,fitsRam,tps,prefill,load,maxB};
+}
+function renderSim(){
+ const r=simCalc();
+ const k=[["Model in VRAM",Math.round(r.onGPU*100)+"%",r.onGPU>=1?"var(--green)":r.onGPU>.5?"var(--amber)":"var(--red)"],
+  ["Decode speed",r.fitsRam?fmt(r.tps,1)+" tok/s":"won't load",r.tps>25?"var(--green)":r.tps>8?"var(--amber)":"var(--red)"],
+  ["Prompt (prefill)","~"+Math.round(r.prefill).toLocaleString()+" tok/s","var(--cyan)"],
+  ["Cold load time",fmt(r.load,1)+" s","var(--violet)"],
+  ["Largest dense @Q4",fmt(Math.max(0,r.maxB),0)+"B params","var(--text)"]];
+ $("#skpis").innerHTML=k.map(([a,b,c])=>`<div class="kpi"><div class="k">${a}</div><div class="v" style="color:${c}">${b}</div></div>`).join("");
+ let v;
+ if(!r.fitsRam)v=`<b style="color:var(--red)">Hard fail:</b> ${fmt(r.offGB)} GB spills past VRAM and RAM. Need more VRAM or system RAM.`;
+ else if(r.onGPU<1)v=`<b style="color:var(--red)">Bottleneck = system RAM bandwidth.</b> ${fmt(r.offGB)} GB of weights run on CPU at ${sim.rbw} GB/s vs GPU ${sim.bw} GB/s. Every token waits on the slow part. More VRAM beats a faster GPU here.`;
+ else v=`<b style="color:var(--amber)">Bottleneck = VRAM bandwidth</b> (the normal, healthy ceiling). Fully on GPU. Faster memory (GDDR7/HBM) speeds up decode directly; more compute only speeds up prompt processing.`;
+ $("#sverdict").innerHTML=v; pipeState=r;
+}
+
+/* ---- animated pipeline ---- */
+const cv=$("#pipe"),cx=cv.getContext("2d");let pipeState=null,parts=[];
+const NODES={nvme:[.08,.5,"NVMe"],ram:[.32,.5,"System RAM"],cpu:[.6,.82,"CPU"],vram:[.6,.22,"VRAM"],gpu:[.88,.22,"GPU cores"]};
+const LINKS=[["nvme","ram","nv"],["ram","vram","pcie"],["ram","cpu","rbw"],["vram","gpu","bw"]];
+function sizeCanvas(c){const d=window.devicePixelRatio||1,r=c.getBoundingClientRect();c.width=r.width*d;c.height=r.height*d;c.getContext("2d").setTransform(d,0,0,d,0,0);return r;}
+let PR=sizeCanvas(cv);
+function linkActive(key){const r=pipeState;if(!r)return false;
+ if(key==="bw")return true; if(key==="rbw")return r.onGPU<1; return false;}
+function drawPipe(t){
+ if(!$("#v-hardware").classList.contains("on")){requestAnimationFrame(drawPipe);return;}
+ const W=PR.width,H=PR.height;cx.clearRect(0,0,W,H);
+ const P=k=>[NODES[k][0]*W,NODES[k][1]*H];
+ const r=pipeState;
+ LINKS.forEach(([a,b,key])=>{
+  const [x1,y1]=P(a),[x2,y2]=P(b),bw=sim[key],act=linkActive(key);
+  const slow=r&&((key==="rbw"&&r.onGPU<1));
+  cx.strokeStyle=slow?"#ff5a6e":act?"#3ee6ff":"#253045";cx.lineWidth=2+Math.log10(bw+1)*2.2;cx.globalAlpha=act?.55:.35;
+  cx.beginPath();cx.moveTo(x1,y1);cx.lineTo(x2,y2);cx.stroke();cx.globalAlpha=1;
+  cx.fillStyle="#7d8a9c";cx.font="11px JetBrains Mono, ui-monospace, monospace";cx.textAlign="center";
+  cx.fillText(bw+" GB/s",(x1+x2)/2,(y1+y2)/2-10);
+  // spawn
+  const rate=act?0.25+Math.log10(bw)/6:0.04;
+  if(Math.random()<rate)parts.push({a,b,key,k:0,sp:(0.002+Math.log10(bw+1)*0.0042)*(act?1:.6),c:slow?"#ff5a6e":key==="bw"?"#4dff9a":"#3ee6ff"});
+ });
+ parts=parts.filter(p=>p.k<1);
+ parts.forEach(p=>{p.k+=p.sp;const [x1,y1]=P(p.a),[x2,y2]=P(p.b),x=x1+(x2-x1)*p.k,y=y1+(y2-y1)*p.k;
+  cx.fillStyle=p.c;cx.shadowColor=p.c;cx.shadowBlur=8;cx.beginPath();cx.arc(x,y,2.4,0,7);cx.fill();cx.shadowBlur=0;});
+ Object.entries(NODES).forEach(([k,[nx,ny,lab]])=>{
+  const x=nx*W,y=ny*H,hi=sim.hi===k,pulse=hi?6*Math.abs(Math.sin(t/250)):0;
+  let sub="";if(r){if(k==="vram")sub=sim.vram+" GB · "+Math.round(r.onGPU*100)+"% model";
+   if(k==="ram")sub=sim.ram+" GB";if(k==="gpu")sub=sim.tf+" TFLOPS";if(k==="cpu")sub=r.onGPU<1?fmt(r.offGB)+" GB offloaded":"idle";if(k==="nvme")sub=sim.nv+" GB/s";}
+  cx.fillStyle=hi?"#3ee6ff22":"#0d1118";cx.strokeStyle=hi?"#3ee6ff":(k==="cpu"&&r&&r.onGPU<1)?"#ff5a6e":"#2c3a50";cx.lineWidth=hi?2:1.4;
+  const w=118+pulse,h=46+pulse;cx.beginPath();cx.roundRect(x-w/2,y-h/2,w,h,9);cx.fill();cx.stroke();
+  cx.fillStyle="#e6edf5";cx.font="600 12px JetBrains Mono, ui-monospace, monospace";cx.textAlign="center";cx.fillText(lab,x,y-2);
+  cx.fillStyle="#7d8a9c";cx.font="10px JetBrains Mono, ui-monospace, monospace";cx.fillText(sub,x,y+13);
+ });
+ requestAnimationFrame(drawPipe);
+}
+
+const COMPS=[
+ {n:"vram",t:"VRAM capacity",d:"GPU's own memory. Weights + KV cache must live here for full-speed inference. The hard gate: model either fits or spills to slow system RAM.",r:"Q4 needs ~0.6 GB per B params + KV + ~1 GB.",b:"Spill even 10% to RAM and speed can drop 3–5×."},
+ {n:"vram",t:"Memory bandwidth",d:"How fast the GPU reads VRAM. Each generated token reads every active weight once, so this sets the token/s ceiling.",r:"tok/s ≈ bandwidth × 0.7 ÷ GB read per token.",b:"Why a 3090 (936 GB/s) still runs at roughly 4090 speeds for LLM decode."},
+ {n:"gpu",t:"Tensor cores / compute",d:"Matrix-math throughput. Drives prompt processing (prefill), batching many users, and training. Decode for one user barely uses it.",r:"Matters for RAG with long prompts, agents, fine-tuning.",b:"Long-context prefill + training are compute-bound."},
+ {n:"gpu",t:"Precision support (FP8/FP4)",d:"Newer GPUs run low-bit formats natively (Blackwell: FP4). Smaller weights mean less VRAM and fewer bytes per token, so faster.",r:"Q4 ≈ 4× smaller than FP16 with small quality loss on 30B+ models.",b:"Older cards dequantize in software, which costs some speed."},
+ {n:"ram",t:"System RAM",d:"Staging area for loading models and overflow for CPU offload (llama.cpp -ngl, MoE expert offload). Also holds your datasets and vector DB.",r:"RAM ≥ model file size, ideally 2× VRAM.",b:"Dual-channel DDR5 ~80–100 GB/s is ~10× slower than VRAM."},
+ {n:"cpu",t:"CPU",d:"Runs offloaded layers, tokenization, data loading, and your agent/tool code. Core count matters less than memory channels.",r:"For offload, buy memory channels (server/Threadripper) over clock speed.",b:"Offloaded layers decode at RAM speed."},
+ {n:"ram",t:"PCIe lanes",d:"Pipe between RAM and GPU and between GPUs. Used at model load and for multi-GPU tensor parallelism.",r:"x16 Gen4 per GPU ideal; x4 is OK for layer-split inference.",b:"Tensor-parallel across x4 links cuts multi-GPU speedup."},
+ {n:"nvme",t:"NVMe storage",d:"Where model files live. Determines cold-load time and swap speed between models. 70B Q4 is roughly a 40 GB file.",r:"2TB+ Gen4; model libraries grow fast.",b:"SATA SSD makes model swaps slow (~0.5 GB/s)."},
+ {n:"gpu",t:"PSU + cooling",d:"Power and heat headroom keep clocks steady through long training or batch runs. Multi-GPU rigs are mostly limited by power.",r:"PSU ≥ (sum of TDPs) × 1.3. Power-limit 3090s to ~280 W with little speed loss.",b:"Transient spikes trip weak PSUs and crash the run."},
+ {n:"vram",t:"Unified memory (Mac / Strix / Spark)",d:"CPU and GPU share one large pool (up to 128GB+). Fits huge models in one box at lower bandwidth (256–614 GB/s).",r:"Strong pick for MoE models (big total, small active params).",b:"Dense 70B decodes slowly: bandwidth-bound."}
+];
+$("#comps").innerHTML=COMPS.map((c,i)=>`<div class="comp" data-i="${i}"><span class="ic">${c.n.toUpperCase()}</span><h3>${c.t}</h3><p>${c.d}</p><div class="rule">▸ ${c.r}</div><div class="bn" style="margin-top:4px">⚠ ${c.b}</div></div>`).join("");
+$("#comps").addEventListener("click",e=>{const el=e.target.closest(".comp");if(!el)return;
+ document.querySelectorAll(".comp").forEach(x=>x.classList.toggle("on",x===el));sim.hi=COMPS[+el.dataset.i].n;
+ $("#pipe").scrollIntoView({behavior:"smooth",block:"center"});});
+
+/* ---- editable spec sheet ---- */
+function renderSpec(){
+ $("#spec").innerHTML=`<tr><th>Item</th><th>Memory GB</th><th>Bandwidth GB/s</th><th>FP16 TF≈</th><th>Price $</th><th>$/GB</th></tr>`+
+  HW.map(h=>`<tr><td>${h.name}</td><td><input type="number" data-id="${h.id}" data-f="mem" value="${h.mem}"></td><td><input type="number" data-id="${h.id}" data-f="bw" value="${h.bw}"></td><td>${h.kind==="part"?"—":`<input type="number" data-id="${h.id}" data-f="tf" value="${h.tf}">`}</td><td><input type="number" data-id="${h.id}" data-f="price" value="${h.price}"></td><td id="pg_${h.id}">${usd(h.price/h.mem)}</td></tr>`).join("");
+}
+$("#spec").addEventListener("input",e=>{const i=e.target;if(!i.dataset.id)return;const h=HW.find(x=>x.id===i.dataset.id),v=parseFloat(i.value);
+ if(v>0){h[i.dataset.f]=v;if(h.kind==="unified"&&i.dataset.f==="mem")h.usable=v*0.86;$("#pg_"+h.id).textContent=usd(h.price/h.mem);saveHW();if(B&&B.spec)B.spec();renderCalc();renderSnap();drawChart(1);buildTicker();}});
+$("#resetHW").onclick=()=>{try{localStorage.removeItem(EDIT_KEY);}catch(e){}rebuildHW();renderSpec();fillPresets();renderCalc();renderSnap();drawChart(1);buildTicker();};
+
+/* ============ PRICES ============ */
+const sel=new Set(["3090","5090","5060ti","strix","ddr5"]);let metric="usd",sortK="chg",sortD=-1;
+function renderChips(){$("#chips").innerHTML=HW.map(h=>`<span class="chip ${sel.has(h.id)?"on":""}" data-id="${h.id}"><b style="background:${h.col}"></b>${h.name}</span>`).join("");}
+$("#chips").addEventListener("click",e=>{const c=e.target.closest(".chip");if(!c)return;const id=c.dataset.id;sel.has(id)?sel.delete(id):sel.add(id);renderChips();animChart();});
+seg("#metric","mt",v=>{metric=v;animChart();});
+const ch=$("#chart"),g=ch.getContext("2d");let CR=sizeCanvas(ch),hoverPts=[];
+const toT=s=>{const [y,m]=s.split("-").map(Number);return y+(m-1)/12;};
+function mv(h,v){return metric==="usd"?v:metric==="pct"?v/h.msrp*100:v/h.mem;}
+function series(h){const pts=h.hist.map(([d,v])=>[toT(d),v]);
+ // replace last point with live sheet price if user edited it
+ const last=pts[pts.length-1];if(last&&h.price!==HW0.find(x=>x.id===h.id).price)pts.push([Math.max(last[0],nowT()),h.price]);return pts;}
+function drawChart(prog){
+ const W=CR.width,H=CR.height,pad={l:62,r:18,t:16,b:34};g.clearRect(0,0,W,H);
+ const S=HW.filter(h=>sel.has(h.id));if(!S.length){g.fillStyle="#7d8a9c";g.font="13px JetBrains Mono, ui-monospace, monospace";g.fillText("select items above",pad.l,40);return;}
+ let x0=2025,x1=Math.max(2026.9,nowT()+0.05),y1=0;
+ S.forEach(h=>series(h).forEach(([t,v])=>{x0=Math.min(x0,t);x1=Math.max(x1,t+0.05);if(t>=2024.9)y1=Math.max(y1,mv(h,v));}));
+ x0=Math.max(x0,2024.9);y1*=1.12;
+ const X=t=>pad.l+(t-x0)/(x1-x0)*(W-pad.l-pad.r),Y=v=>H-pad.b-v/y1*(H-pad.t-pad.b);
+ g.font="11px JetBrains Mono, ui-monospace, monospace";g.strokeStyle="#1a2230";g.fillStyle="#7d8a9c";g.lineWidth=1;
+ for(let i=0;i<=5;i++){const v=y1*i/5,y=Y(v);g.beginPath();g.moveTo(pad.l,y);g.lineTo(W-pad.r,y);g.stroke();g.textAlign="right";
+  g.fillText(metric==="pct"?Math.round(v)+"%":"$"+(v>=1000?(v/1000).toFixed(1)+"k":v>=10?Math.round(v):v.toFixed(2)),pad.l-8,y+4);}
+ g.textAlign="center";for(let yy=Math.ceil(x0*2)/2;yy<=x1;yy+=0.5){const x=X(yy);g.fillText(yy%1===0?String(yy):"Jul",x,H-12);g.beginPath();g.moveTo(x,pad.t);g.lineTo(x,H-pad.b);g.strokeStyle="#131a25";g.stroke();}
+ if(metric==="pct"){g.strokeStyle="#ffffff40";g.setLineDash([4,4]);g.beginPath();g.moveTo(pad.l,Y(100));g.lineTo(W-pad.r,Y(100));g.stroke();g.setLineDash([]);g.fillStyle="#ffffff70";g.textAlign="left";g.fillText("launch price",pad.l+6,Y(100)-6);}
+ const clipX=pad.l+(W-pad.l-pad.r)*prog;
+ g.save();g.beginPath();g.rect(0,0,clipX,H);g.clip();hoverPts=[];const labs=[];
+ S.forEach(h=>{const pts=series(h).filter(p=>p[0]>=x0-0.01);g.strokeStyle=h.col;g.lineWidth=2.4;g.shadowColor=h.col;g.shadowBlur=10;g.beginPath();
+  pts.forEach(([t,v],i)=>{const x=X(t),y=Y(mv(h,v));i?g.lineTo(x,y):g.moveTo(x,y);});g.stroke();g.shadowBlur=0;
+  pts.forEach(([t,v])=>{const x=X(t),y=Y(mv(h,v));g.fillStyle="#07090d";g.beginPath();g.arc(x,y,4,0,7);g.fill();g.strokeStyle=h.col;g.lineWidth=2;g.stroke();hoverPts.push({x,y,h,t,v});});
+  const [lt,lv]=pts[pts.length-1];labs.push({c:h.col,t:h.name.replace(/ \(.*\)/,""),x:Math.min(X(lt)-8,W-pad.r-4),y:Y(mv(h,lv))-9});});
+ labs.sort((a,b)=>a.y-b.y);for(let i=1;i<labs.length;i++)if(labs[i].y-labs[i-1].y<13)labs[i].y=labs[i-1].y+13;
+ g.font="600 11px JetBrains Mono, ui-monospace, monospace";g.textAlign="right";labs.forEach(l=>{g.fillStyle=l.c;g.fillText(l.t,l.x,l.y);});
+ g.restore();
+}
+function animChart(){const t0=performance.now();(function f(t){const k=Math.min(1,(t-t0)/1100);drawChart(1-Math.pow(1-k,3));if(k<1)requestAnimationFrame(f);})(t0);}
+ch.addEventListener("mousemove",e=>{const r=ch.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;let b=null,bd=400;
+ hoverPts.forEach(p=>{const d=(p.x-mx)**2+(p.y-my)**2;if(d<bd){bd=d;b=p;}});const tip=$("#tip");
+ if(!b){tip.style.display="none";return;}const yr=Math.floor(b.t),mo=Math.round((b.t-yr)*12)+1;
+ tip.innerHTML=`<b style="color:${b.h.col}">${b.h.name}</b><br>${yr}-${String(mo).padStart(2,"0")} · ${usd(b.v)}<br><span style="color:#7d8a9c">${Math.round(b.v/b.h.msrp*100)}% of launch · ${usd(b.v/b.h.mem)}/GB</span>`;
+ tip.style.display="block";tip.style.left=(e.clientX+14)+"px";tip.style.top=(e.clientY+14)+"px";});
+ch.addEventListener("mouseleave",()=>$("#tip").style.display="none");
+
+function sourceLink(h){const s=h.srcs?h.srcs[0]:{name:SOURCES[h.src][0].split(" — ")[0],url:SOURCES[h.src][1]};
+ return s&&isHttps(s.url)?` <a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.name)}</a>`:"";}
+function renderSnap(){
+ const cols=[["name","Item"],["mem","Memory"],["bw","GB/s"],["msrp","Launch $"],["price","Street $"],["chg","vs launch"],["pergb","$/GB"],["tpsd","$ per GB/s"],["when","As of"]];
+ const rows=HW.map(h=>({...h,chg:(h.price/h.msrp-1)*100,pergb:h.price/h.mem,tpsd:h.price/h.bw}));
+ rows.sort((a,b)=>{const x=a[sortK],y=b[sortK];return (typeof x==="string"?x.localeCompare(y):x-y)*sortD;});
+ $("#snap").innerHTML=`<tr>${cols.map(([k,n])=>`<th data-k="${k}">${n}${sortK===k?(sortD>0?" ▲":" ▼"):""}</th>`).join("")}</tr>`+
+  rows.map(r=>`<tr><td><span style="color:${r.col}">●</span> ${r.name}</td><td>${r.mem>=1000?r.mem/1000+" TB":r.mem+" GB"}</td><td>${r.bw}</td><td>${usd(r.msrp)}</td><td>${usd(r.price)}</td>
+  <td class="${r.chg>0?"up":"dn"}">${r.chg>0?"+":""}${Math.round(r.chg)}%</td><td>${r.pergb<1?"$"+r.pergb.toFixed(2):usd(r.pergb)}</td><td>${r.kind==="part"?"—":"$"+r.tpsd.toFixed(2)}</td><td>${esc(r.when)}${sourceLink(r)}</td></tr>`).join("");
+}
+$("#snap").addEventListener("click",e=>{const th=e.target.closest("th");if(!th)return;const k=th.dataset.k;sortD=sortK===k?-sortD:-1;sortK=k;renderSnap();});
+$("#sources").innerHTML=SOURCES.map(([t,u])=>`<li><a href="${u}" target="_blank" rel="noopener">${t}</a></li>`).join("");
+function buildTicker(){const s=HW.map(h=>{const c=(h.price/h.msrp-1)*100;return `<span>${h.name} <b style="color:#fff">${usd(h.price)}</b> <span class="${c>0?"up":"dn"}">${c>0?"▲":"▼"}${Math.abs(Math.round(c))}%</span></span>`;}).join("");$("#ticker").innerHTML=s+s;}
+
+/* ============ PRICE FEED ============ */
+// prices.json passed feed/merge.py, but it is still checked here: the page never trusts its input.
+window.feedState="loading";
+const MARKET_LABEL={used:"Used asks · r/hardwareswap",new_deal:"New deals · r/buildapcsales"};
+const validHist=rows=>Array.isArray(rows)?rows.filter(r=>Array.isArray(r)&&/^\d{4}-\d{2}$/.test(r[0])&&isPrice(r[1])):[];
+function applyFeedItems(items){HW0.forEach(h=>{const f=items[h.id];if(!f||!isPrice(f.price))return;
+ h.price=f.price;if(typeof f.as_of==="string")h.when=f.as_of;
+ h.srcs=(Array.isArray(f.sources)?f.sources:[]).filter(s=>s&&isHttps(s.url)).map(s=>({name:String(s.name||"source"),url:s.url}));
+ const hist=validHist(f.hist);if(hist.length)h.hist=hist;});}
+function renderHeld(held){const el=$("#held"),rows=(Array.isArray(held)?held:[]).map(x=>{const h=x&&HW0.find(i=>i.id===x.id);return h?`${esc(h.name)}: ${esc(x.reason)}`:"";}).filter(Boolean);
+ el.style.display=rows.length?"block":"none";el.innerHTML=rows.length?"<b>Held back in the latest check, last good price kept:</b><br>"+rows.join("<br>"):"";}
+function renderSignal(signal){const items=signal&&signal.items&&typeof signal.items==="object"?signal.items:{},rows=[];
+ HW0.forEach(h=>Object.keys(MARKET_LABEL).forEach(m=>{const x=items[h.id]&&items[h.id][m];if(!x||!isPrice(x.median)||!isPrice(x.low)||!isPrice(x.high))return;
+  const links=(Array.isArray(x.samples)?x.samples:[]).filter(s=>s&&isPrice(s.price)&&isHttps(s.url,"https://www.reddit.com/r/")).map(s=>`<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${usd(s.price)}</a>`).join(" ");
+  rows.push(`<tr><td><span style="color:${h.col}">●</span> ${esc(h.name)}</td><td>${MARKET_LABEL[m]}</td><td>${usd(x.median)}</td><td>${usd(x.low)}–${usd(x.high)}</td><td>${esc(Number(x.n)||0)}</td><td>${esc(x.last_seen||"")}</td><td>${links}</td></tr>`);}));
+ $("#signal").innerHTML=rows.length?`<table><tr><th>Item</th><th>Market</th><th>Median ask</th><th>Range</th><th>Samples</th><th>Last seen</th><th>Posts</th></tr>${rows.join("")}</table><p class="note">Separate from the prices above: asking prices from single-item Reddit posts over the last ${esc(Number(signal.window_days)||30)} days. A few samples can swing the median.</p>`:'<p class="note">No Reddit market samples yet: asking prices appear here as qualifying posts are collected.</p>';}
+function applyFeed(feed){
+ if(!feed||typeof feed.items!=="object"||!feed.items||!/^\d{4}-\d{2}-\d{2}/.test(feed.generated_at||""))throw new Error("bad feed");
+ applyFeedItems(feed.items);rebuildHW();
+ const date=feed.generated_at.slice(0,10),age=Math.floor((Date.now()-Date.parse(date))/864e5);
+ $("#stamp").textContent=(age>2?`prices last checked ${date} (${age} days ago)`:`prices updated ${date}`)+" · US street · USD";
+ $("#feedWarn").textContent="Checked daily. Each price shows its own date and source; an older date means no newer confirmed price was found. Lines connect published points, not daily data.";
+ renderHeld(feed.held);renderSignal(feed.signal);
+ renderSpec();fillPresets();renderChips();renderCalc();renderSnap();drawChart(1);buildTicker();if(typeof B!=="undefined"&&B&&B.spec)B.spec();
+}
+async function loadFeed(){renderSignal(null);
+ try{const r=await fetch("prices.json",{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);applyFeed(await r.json());window.feedState="live";}
+ catch(e){console.warn("price feed unavailable, using snapshot:",e.message);window.feedState="snapshot";}}
+
+/* ============ 3D BUILD ============ */
+const STEPS=[
+ {p:"case",t:"Bare case",b:"Start with the empty chassis, side panel off, case on its side so parts can't fall while you work.",d:"Everything is out. Only the case shell and its fans are left.",ai:"Case airflow decides whether a GPU holds boost clocks through a 3-hour fine-tune or throttles at 83°C.",tip:"For AI rigs pick a mesh-front case. Glass fronts starve GPUs of air."},
+ {p:"psu",t:"Install the PSU",b:"Slide the PSU into the bottom bay, fan facing down toward the dust filter, then drive 4 screws through the rear.",d:"With every cable out, remove the 4 rear screws and slide the PSU out last.",ai:"Feeds every watt in the system. A 5090 alone is rated 575 W, so an undersized PSU means random crashes mid-training.",tip:"Size = (GPU TDP + CPU TDP + 150 W) × 1.3. Two 3090s → 1200 W+."},
+ {p:"mobo",t:"Mount the motherboard",b:"Line up the standoffs and I/O shield, lower the board in, then drive 9 screws snug, not tight.",d:"Remove 9 screws and tilt the board out of the I/O cutout. Hold it by the edges and don't touch the socket pins.",ai:"Sets your PCIe lanes (how many GPUs run at full speed), RAM channels and M.2 slots.",tip:"Multi-GPU: confirm slot 2 runs x8 electrically and isn't x4 through the chipset."},
+ {p:"cpu",t:"Seat the CPU",b:"Lift the socket lever, match the triangle marker to the socket corner, set the CPU in with zero force, close the lever.",d:"Lift the lever and pull the CPU straight up by its edges. Put the socket cover back on.",ai:"Handles tokenization, data loading, agent/tool code, and any model layers offloaded from VRAM.",tip:"For AI boxes, PCIe lanes and memory channels matter more than clock speed."},
+ {p:"cooler",t:"Thermal paste + cooler",b:"Put a pea-size dot of paste on the CPU center, set the cooler straight down, cross-tighten it, and plug the fan into CPU_FAN.",d:"Twist the cooler slightly to break the paste seal, then lift. Clean off old paste with isopropyl alcohol.",ai:"Keeps the CPU from throttling during long preprocessing jobs and offloaded inference.",tip:"Use the CPU_FAN header. Many boards refuse to POST without a fan there."},
+ {p:"ram",t:"Install RAM",b:"Open the latches, line up the notch, and press both ends until it clicks. With 2 sticks, use slots A2/B2.",d:"Push the latches down and the stick pops up. Pull it straight out.",ai:"Staging area for model loads, CPU offload, vector DBs and datasets. Get at least as much RAM as the model file size.",tip:"2026 shortage: a 32 GB DDR5 kit runs about $450. Buy the capacity you need once (2×32 or 2×48)."},
+ {p:"nvme",t:"Install NVMe SSD",b:"Remove the M.2 heatsink, insert the drive at 30°, press it flat, latch it, and refit the heatsink (peel the film).",d:"Remove the heatsink and release the latch. The drive springs up to 30°; slide it out.",ai:"Holds model weights. Load time = file size ÷ read speed: a 40 GB 70B model at 7 GB/s loads in about 6 s.",tip:"Put the model drive in the CPU-attached M.2 slot (usually the top one)."},
+ {p:"gpu",t:"Install the GPU",b:"Remove 2–3 slot covers, open the PCIe latch, press the card into the top x16 slot until it clicks, then screw in the bracket.",d:"Unscrew the bracket, press the small PCIe latch under the card, and pull it straight out.",ai:"The AI engine. VRAM decides which models fit; bandwidth decides tokens/sec. Usually 60–80% of an AI build's budget.",tip:"The top x16 slot is wired to the CPU. Add a support bracket: a 2 kg card sags and can crack the slot."},
+ {p:"atx",t:"24-pin ATX power",b:"Route the cable from the PSU and push the 24-pin into the board's right edge until the clip latches.",d:"Squeeze the clip fully and rock the plug out gently. Never pull by the wires.",ai:"Powers the motherboard, RAM and chipset, plus up to 75 W through the PCIe slot.",tip:"Use only your PSU's own modular cables. Pinouts differ between brands, and a mixed cable can fry parts."},
+ {p:"eps",t:"8-pin EPS CPU power",b:"Route the cable across the top-left and plug the 8-pin (or 4+4) into the CPU power header by the socket.",d:"Press the latch and pull. It's hard to reach, so unplug it before removing the cooler.",ai:"Dedicated CPU power. Without it the board won't POST.",tip:"EPS (CPU) and PCIe (GPU) 8-pins look the same but are keyed differently. Never force one in."},
+ {p:"gpupwr",t:"12V-2×6 GPU power",b:"Push the 16-pin plug in until it's fully flush and clicks. Keep about 35 mm of straight cable before any bend.",d:"Press the latch and pull straight out. Check the pins for browning.",ai:"Carries up to 600 W to the GPU. A partly seated plug is the #1 cause of melted connectors.",tip:"Flush = no visible gap. Power-limiting to ~80% costs little LLM speed."},
+ {p:"panel",t:"Close the side panel",b:"Slide the glass panel on and tighten the thumbscrews by hand.",d:"Remove the thumbscrews, lift the panel off, and lay it flat on a towel.",ai:"Panel closed = the airflow path the case was designed for. Running with it open often cooks GPUs.",tip:"Glass panels are the part most often broken during builds. Put it somewhere safe."},
+ {p:"wall",t:"Plug in wall power",b:"Last step before boot: plug the IEC cable into the PSU, and the other end into a surge protector or UPS.",d:"Teardown step 1, always: PSU switch off, unplug the wall cable, then hold the power button 5 s to drain the capacitors.",ai:"A UPS protects multi-hour training jobs from brownouts.",tip:"Unplug before you touch anything inside."},
+ {p:"power",t:"Switch on → POST",b:"Flip the PSU switch to I and press the power button. Fans spin, RGB lights up, the board POSTs. In BIOS, enable XMP/EXPO and check the GPU link shows x16.",d:"Shut down from the OS, then flip the PSU switch to O.",ai:"First-boot AI checklist: nvidia-smi sees the card, the link is PCIe Gen4/5 x16, RAM runs at rated speed.",tip:"Then run `ollama run llama3.1:8b` and compare its tok/s with the Calculator's estimate."}
+];
+const TT={case:"Bare case",psu:"Pull the PSU",mobo:"Remove the motherboard",cpu:"Lift out the CPU",cooler:"Remove cooler + clean paste",ram:"Pull the RAM",nvme:"Remove the NVMe",gpu:"Pull the GPU",atx:"Unplug 24-pin ATX",eps:"Unplug 8-pin EPS",gpupwr:"Unplug 12V-2×6",panel:"Remove side panel",wall:"Unplug wall power",power:"Shut down + PSU off"};
+let B=null;
+const ease=k=>k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;
+function initBuild(){
+ if(B){B.resize();return;}
+ if(!window.THREE){$("#b_err").style.display="block";return;}
+ const T=THREE,host=$("#b_view");
+ const R=new T.WebGLRenderer({antialias:true,alpha:true});
+ R.setPixelRatio(Math.min(2,window.devicePixelRatio||1));R.outputEncoding=T.sRGBEncoding;host.appendChild(R.domElement);
+ const S=new T.Scene(),C=new T.PerspectiveCamera(38,1,0.1,800);
+ S.add(new T.HemisphereLight(0xa8dcff,0x0a0d14,0.7));
+ const key=new T.DirectionalLight(0xffffff,0.6);key.position.set(70,90,60);S.add(key);
+ const rim=new T.PointLight(0x3ee6ff,0.9,170);rim.position.set(-30,55,-45);S.add(rim);
+ const warm=new T.PointLight(0xffb547,0.45,150);warm.position.set(45,12,45);S.add(warm);
+ const inner=new T.PointLight(0x7a5cff,0,60);inner.position.set(0,28,0);S.add(inner);
+ const grid=new T.GridHelper(240,48,0x1e2735,0x10151e);S.add(grid);
+ const parts={},order=[],pickables=[],spin=[],glow=[];
+ const M=(c,o={})=>{const m=new T.MeshStandardMaterial(Object.assign({color:c,metalness:.45,roughness:.5},o));m.userData.base=o.opacity!==undefined?o.opacity:1;return m;};
+ const box=(w,h,d,c,x,y,z,o)=>{const m=new T.Mesh(new T.BoxGeometry(w,h,d),Array.isArray(c)?c:M(c,o));m.position.set(x,y,z);return m;};
+ const cyl=(r1,r2,h,c,o)=>new T.Mesh(new T.CylinderGeometry(r1,r2,h,24),M(c,o));
+ const G=(...kids)=>{const g=new T.Group();kids.forEach(k=>g.add(k));return g;};
+ function glowMat(c,i,rgb){const m=M(0x111111,{emissive:c,emissiveIntensity:0});m.userData.glow=1;glow.push({m,i,rgb,ph:Math.random()});return m;}
+ function fan(size,ringGlow){
+  const g=new T.Group(),rot=new T.Group();
+  g.add(new T.Mesh(new T.TorusGeometry(size*.5,size*.05,8,40),ringGlow?glowMat(0x3ee6ff,1.4,true):M(0x1a1f28)));
+  const hub=cyl(size*.14,size*.14,size*.2,0x222833);hub.rotation.x=Math.PI/2;rot.add(hub);
+  for(let i=0;i<7;i++){const p=new T.Group(),b=box(size*.36,size*.13,.08,0x2c3646,size*.27,0,0,{roughness:.8});b.rotation.x=.55;p.rotation.z=i/7*Math.PI*2;p.add(b);rot.add(p);}
+  g.add(rot);spin.push(rot);return g;}
+ function tex(w,h,draw){const c=document.createElement("canvas");c.width=w;c.height=h;draw(c.getContext("2d"),w,h);const t=new T.CanvasTexture(c);t.anisotropy=4;return t;}
+ function addPart(id,step,obj,dir,label){S.add(obj);const mats=[];
+  obj.traverse(o=>{if(o.material){[].concat(o.material).forEach(m=>{if(!mats.includes(m))mats.push(m);});o.userData.pid=id;if(o.isMesh)pickables.push(o);}});
+  const EX={psu:[12,-16,0],mobo:[-6,4,0],cpu:[12,8,0],cooler:[28,18,0],ram:[20,22,12],nvme:[14,-6,16],gpu:[28,-12,10],panel:[34,0,0]};
+  return parts[id]=order[order.length]={id,step,obj,home:obj.position.clone(),dir:new T.Vector3(...dir),ex:new T.Vector3(...(EX[id]||[0,0,0])),k:0,mats,label:new T.Vector3(...label)};}
+
+ // ---- CASE
+ const edges=new T.LineSegments(new T.EdgesGeometry(new T.BoxGeometry(22,46,44)),new T.LineBasicMaterial({color:0x3ee6ff,transparent:true,opacity:.5}));
+ edges.material.userData.base=.5;edges.position.set(0,23,0);
+ const caseG=G(edges,box(.4,46,44,0x0e131b,-11.2,23,0,{metalness:.7,roughness:.35}),box(22,.6,44,0x0e131b,0,.3,0),
+  box(22,.6,44,0x0e131b,0,45.7,0,{transparent:true,opacity:.5}),box(22,46,.6,0x0b0f15,0,23,21.7,{transparent:true,opacity:.55}),
+  box(22,46,.6,0x0b0f15,0,23,-21.7,{transparent:true,opacity:.75}),box(1.2,.5,1.2,0x333a45,6,46.1,17));
+ const btnLed=box(.6,.2,.6,0,6,46.4,17);btnLed.material=glowMat(0x4dff9a,2.5,false);caseG.add(btnLed);
+ [12,24,36].forEach(y=>{const f=fan(11.5,true);f.position.set(0,y,20.6);caseG.add(f);});
+ const rf=fan(11.5,false);rf.position.set(0,37,-20.6);caseG.add(rf);
+ addPart("case",0,caseG,[0,0,0],[11,46,21]);
+
+ // ---- PSU
+ const psuTex=tex(256,160,(x,w,h)=>{x.fillStyle="#161b23";x.fillRect(0,0,w,h);x.fillStyle="#ffb547";x.font="bold 34px monospace";x.fillText("1200W",20,70);x.fillStyle="#7d8a9c";x.font="20px monospace";x.fillText("80+ GOLD · MODULAR",20,110);});
+ const pm=M(0x161b23);const psuBody=box(15,8.6,14,[M(0x161b23,{map:psuTex}),pm,pm,pm,pm,pm],0,4.6,-14.5);
+ const psuSw=box(.8,1.4,.5,0xff5a6e,-4,4.6,-21.7);
+ const psuG=G(psuBody,box(2.6,1.8,.3,0x050505,3,4.6,-21.7),psuSw,box(12,.2,10,0x0a0d12,0,.25,-14.5));
+ [-4,-1,2,5].forEach(x=>psuG.add(box(1.8,1,.4,0x050505,x,6.2,-7.4)));
+ addPart("psu",1,psuG,[30,6,8],[7.5,9.5,-9]);
+
+ // ---- MOTHERBOARD
+ const pcb=tex(256,320,(x,w,h)=>{x.fillStyle="#0c1913";x.fillRect(0,0,w,h);x.strokeStyle="#1f5a40";x.lineWidth=1.2;
+  for(let i=0;i<170;i++){x.beginPath();let px=Math.random()*w,py=Math.random()*h;x.moveTo(px,py);for(let j=0;j<4;j++){Math.random()<.5?px+=(Math.random()-.5)*90:py+=(Math.random()-.5)*90;x.lineTo(px,py);}x.stroke();}
+  x.fillStyle="#3a8a64";for(let i=0;i<400;i++)x.fillRect(Math.random()*w,Math.random()*h,2,2);});
+ pcb.wrapS=pcb.wrapT=T.ClampToEdgeWrapping;
+ const bm=M(0x0c1913);
+ const moboG=G(box(.25,30.5,24.4,[M(0xffffff,{map:pcb,roughness:.7,metalness:.1}),bm,bm,bm,bm,bm],-10.7,28,-6),
+  box(.35,5.4,5.4,0x9aa3ad,-10.45,36,-8,{metalness:.9,roughness:.3}),
+  box(2.5,15,3,0x2a2f38,-9.4,36,-16.5,{metalness:.8}), box(2.2,3,9,0x2a2f38,-9.5,42,-10,{metalness:.8}), box(2.2,9,2.2,0x2a2f38,-9.5,34,-13,{metalness:.8}),
+  box(.8,.8,9,0x111111,-10.2,22,-12.5), box(.8,.8,9,0x111111,-10.2,15,-12.5),
+  box(1.1,5.5,1.3,0x050505,-10,30,5.4), box(1,1.8,1,0x050505,-10,42.5,-15), box(1.2,4,4,0x2a2f38,-9.9,17.5,0,{metalness:.8}));
+ [-1.6,-.6,.4,1.4].forEach(z=>moboG.add(box(.6,13.5,.28,0x111111,-10.3,36,z)));
+ addPart("mobo",2,moboG,[26,4,0],[-10.5,44,4]);
+
+ // ---- CPU
+ addPart("cpu",3,G(box(.35,4.5,4.5,0x2e7d5a,-10.2,36,-8),box(.25,3.6,3.6,0xc8cdd3,-9.95,36,-8,{metalness:1,roughness:.25})),[20,8,0],[-9.8,38.6,-8]);
+
+ // ---- COOLER (tower: heatpipes out of board, fins stacked along x, fan on front)
+ const cool=new T.Group();
+ cool.add(box(1.2,4,4,0xb87333,-9.2,36,-8,{metalness:1,roughness:.3}));
+ [-1.2,-.4,.4,1.2].forEach(dy=>{const hp=cyl(.3,.3,13,0xb87333,{metalness:1,roughness:.3});hp.rotation.z=Math.PI/2;hp.position.set(-2.6,36+dy,-8);cool.add(hp);});
+ for(let i=0;i<30;i++)cool.add(box(.07,12,5.6,0xc9ced4,-6.6+i*.36,36,-8,{metalness:.95,roughness:.35}));
+ cool.add(box(11,12,.2,0x1a1f28,-1.4,36,-10.9));
+ const cf=fan(11,false);cf.position.set(-1.4,36,-4.7);cool.add(cf);
+ addPart("cooler",4,cool,[26,12,0],[4,42.5,-8]);
+
+ // ---- RAM
+ const ram=new T.Group();
+ [-1.6,-.6,.4,1.4].forEach(z=>{ram.add(box(3.2,13.3,.15,0x0f3d2b,-8.4,36,z));ram.add(box(3.4,13.3,.55,0x1c222c,-8.2,36,z,{metalness:.8,roughness:.35}));
+  const st=box(.35,13,.5,0,-6.35,36,z);st.material=glowMat(0xff00ff,1.6,true);ram.add(st);});
+ addPart("ram",5,ram,[22,2,6],[-6.5,43.2,0]);
+
+ // ---- NVMe
+ const nv=G(box(.15,2.2,8,0x0d2a1e,-10.4,26.5,-6),box(.18,1.6,1.8,0x111111,-10.3,26.5,-8.5),box(.18,1.6,1.8,0x111111,-10.3,26.5,-6.2),box(.18,1.6,1.8,0x111111,-10.3,26.5,-3.9));
+ addPart("nvme",6,nv,[18,-4,10],[-10,28,-3]);
+
+ // ---- GPU (card perpendicular to board, fans facing down)
+ const gpuTex=tex(512,64,(x,w,h)=>{x.fillStyle="#12161d";x.fillRect(0,0,w,h);x.fillStyle="#3ee6ff";x.font="bold 30px monospace";x.fillText("AI ACCELERATOR",30,43);});
+ const gm=M(0x1b2029,{metalness:.7,roughness:.35});
+ const gpu=G(box(13,5.2,30,[gm,gm,gm,gm,gm,gm],-3.4,19.3,-3),box(13,.3,30,0x4a515c,-3.4,22.05,-3,{metalness:.6,roughness:.55}),
+  box(1.4,6.8,.3,0xb0b6bd,-10.1,19.3,-18.3,{metalness:1}),box(.4,.6,8.5,0xd4a017,-10.05,21.7,-12.5,{metalness:1,roughness:.2}),
+  box(.1,1.6,14,[M(0xffffff,{map:gpuTex}),gm,gm,gm,gm,gm],3.15,19.6,-6),box(.6,1.3,2.1,0x050505,3.4,19.6,2.5));
+ const bar=box(.15,.6,20,0,3.2,21.4,-3);bar.material=glowMat(0x4dff9a,1.8,false);gpu.add(bar);
+ [-12.5,-3,6.5].forEach(z=>{const f=fan(8.6,false);f.rotation.x=Math.PI/2;f.position.set(-3.4,16.6,z);gpu.add(f);});
+ addPart("gpu",7,gpu,[30,-2,0],[3.5,22.5,8]);
+
+ // ---- CABLES
+ function cable(id,step,pts,r,col,head,label){
+  const curve=new T.CatmullRomCurve3(pts.map(p=>new T.Vector3(...p)),false,"catmullrom",.3);
+  const geo=new T.TubeGeometry(curve,160,r,10,false);
+  const hd=box(...head,0x0a0a0a,0,0,0,{metalness:.2,roughness:.7});
+  const p=addPart(id,step,G(new T.Mesh(geo,M(col,{metalness:.15,roughness:.75})),hd),[0,0,0],label);
+  p.cable={geo,curve,head:hd,total:geo.index.count};return p;}
+ cable("atx",8,[[-1,8.9,-7.6],[2,10,0],[6,12,10],[6,16,15.5],[-2,26,15],[-7,30,10],[-9.2,30,6.3]],.55,0x1c1c22,[1.3,5.2,1.6],[-9,33.5,6.5]);
+ cable("eps",9,[[-4,8.9,-7.6],[-6,10,-14],[-7.5,13,-20.3],[-8,26,-20.6],[-8,41,-20.3],[-8.6,44.5,-17],[-9.4,42.5,-15.1]],.38,0x1c1c22,[1.1,1.9,1.4],[-9,45,-15]);
+ cable("gpupwr",10,[[2,8.9,-7.6],[7,10,-2],[9,13,6],[8.5,19.6,7],[6.5,19.6,3.5],[4,19.6,2.5]],.42,0x23232b,[1.6,1.5,2.3],[4.5,21.2,2.5]);
+ cable("wall",12,[[3,.6,-80],[3,.6,-55],[3,2,-36],[3,4.6,-27],[3,4.6,-22.6]],.45,0x111111,[2.4,2,3.6],[3,7,-23]);
+
+ // ---- PANEL
+ addPart("panel",11,G(box(.3,45,43,0x9fe7ff,11.3,23,0,{transparent:true,opacity:.1,metalness:.9,roughness:.05})),[16,0,0],[11.3,40,12]);
+ addPart("power",13,new T.Group(),[0,0,0],[6,47,17]);
+
+ // ---- CAMERA ORBIT
+ const O={th:.85,ph:1.12,r:105,tgt:new T.Vector3(0,22,-2),drag:null};
+ const place=()=>{const s=Math.sin(O.ph),r=O.r*(1+(B?B.ex:0)*.45);C.position.set(O.tgt.x+r*s*Math.sin(O.th),O.tgt.y+r*Math.cos(O.ph),O.tgt.z+r*s*Math.cos(O.th));C.lookAt(O.tgt);};
+ const el=R.domElement;el.style.touchAction="none";
+ el.addEventListener("pointerdown",e=>{O.drag={x:e.clientX,y:e.clientY,m:0};el.setPointerCapture(e.pointerId);});
+ el.addEventListener("pointermove",e=>{if(!O.drag)return;const dx=e.clientX-O.drag.x,dy=e.clientY-O.drag.y;O.drag.x=e.clientX;O.drag.y=e.clientY;O.drag.m+=Math.abs(dx)+Math.abs(dy);
+  O.th-=dx*.006;O.ph=Math.min(1.55,Math.max(.15,O.ph-dy*.006));B.idle=0;});
+ el.addEventListener("pointerup",e=>{if(O.drag&&O.drag.m<5)pickAt(e);O.drag=null;});
+ el.addEventListener("wheel",e=>{e.preventDefault();O.r=Math.min(220,Math.max(35,O.r*(1+e.deltaY*.001)));},{passive:false});
+ const ray=new T.Raycaster(),v2=new T.Vector2();
+ function pickAt(e){const r=el.getBoundingClientRect();v2.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(v2,C);
+  const hits=ray.intersectObjects(pickables.filter(o=>parts[o.userData.pid].k>.5&&parts[o.userData.pid].obj.visible),false);
+  const h=hits.find(x=>!["case","panel"].includes(x.object.userData.pid))||hits[0];
+  if(!h){B.sel=null;return;}B.sel=h.object.userData.pid;const i=STEPS.findIndex(s=>s.p===B.sel);showStep(i,"info");}
+
+ // ---- STATE / UI
+ B={R,C,parts,order,cur:0,mode:"build",ex:0,sel:null,timer:null,idle:0,
+  resize(){const w=host.clientWidth,h=host.clientHeight;R.setSize(w,h);C.aspect=w/h;C.updateProjectionMatrix();}};
+ B.resize();if(window.ResizeObserver)new ResizeObserver(()=>B.resize()).observe(host);
+ $("#b_steps").innerHTML=STEPS.map((s,i)=>`<li data-i="${i}">${String(i).padStart(2,"0")} ${s.t}</li>`).join("");
+ $("#b_steps").onclick=e=>{const li=e.target.closest("li");if(!li)return;stop();const i=+li.dataset.i;go(i,i>=B.cur?"build":"tear");};
+ function showStep(i,kind){const s=STEPS[i];
+  $("#b_n").textContent=`STEP ${String(i).padStart(2,"0")}/${STEPS.length-1}`;
+  const tear=kind==="tear";$("#b_mode").textContent=kind==="info"?"INSPECT":tear?"TEARDOWN":"BUILD";
+  $("#b_mode").className="badge "+(tear?"b-tear":"b-build");
+  $("#b_title").textContent=tear?TT[s.p]:s.t;$("#b_text").textContent=tear?s.d:s.b;$("#b_ai").textContent=s.ai;$("#b_tip").textContent=s.tip;
+  B.focus=s.p;}
+ function go(n,mode){B.cur=Math.max(0,Math.min(STEPS.length-1,n));B.mode=mode;B.sel=null;
+  document.querySelectorAll("#b_steps li").forEach((li,i)=>{li.classList.toggle("done",i<=B.cur);li.classList.toggle("cur",i===(mode==="tear"?Math.min(B.cur+1,STEPS.length-1):B.cur));});
+  showStep(mode==="tear"?Math.min(B.cur+1,STEPS.length-1):B.cur,mode==="tear"&&B.cur<STEPS.length-1?"tear":"build");}
+ function stop(){clearInterval(B.timer);B.timer=null;}
+ function play(dir){stop();if(dir>0&&B.cur>=STEPS.length-1)go(0,"build");if(dir<0&&B.cur<=0)go(STEPS.length-1,"build");
+  B.timer=setInterval(()=>{const n=B.cur+dir;if(n<0||n>STEPS.length-1){stop();return;}go(n,dir>0?"build":"tear");},1900);}
+ $("#b_play").onclick=()=>play(1);$("#b_tear").onclick=()=>play(-1);
+ $("#b_next").onclick=()=>{stop();go(B.cur+1,"build");};$("#b_prev").onclick=()=>{stop();go(B.cur-1,"tear");};
+ $("#b_ex").oninput=e=>{B.ex=+e.target.value;};
+ $("#b_cam").onclick=()=>{O.th=.85;O.ph=1.12;O.r=105;};
+ // GPU tie-in
+ const gpus=HW.filter(h=>h.kind==="gpu");
+ $("#b_gpu").innerHTML=gpus.map(h=>`<option value="${h.id}" ${h.id==="3090"?"selected":""}>${h.name}</option>`).join("");
+ function spec(){const h=HW.find(x=>x.id===$("#b_gpu").value),ram=HW.find(x=>x.id==="ddr5"),nv=HW.find(x=>x.id==="nvme");
+  const psu=Math.ceil((h.tdp+150+120)*1.3/50)*50,maxB=(h.mem*.92-1)/(4.85/8),sub=h.price+ram.price*2+nv.price;
+  $("#b_spec").innerHTML=[["VRAM",h.mem+" GB"],["Bandwidth",h.bw+" GB/s"],["Largest dense @Q4","~"+Math.floor(maxB)+"B"],["8B decode est.","~"+Math.round(h.bw*.7/(8.03*4.85/8+.5))+" tok/s"],
+   ["PSU needed",psu+" W"],["GPU+64GB RAM+2TB",usd(sub)]].map(([k,v])=>`<div class="kpi"><div class="k">${k}</div><div class="v" style="font-size:17px">${v}</div></div>`).join("");}
+ $("#b_gpu").onchange=spec;spec();B.spec=spec;
+
+ // ---- LOOP
+ let last=performance.now();
+ const lbl=$("#b_label"),ltxt=$("#b_ltxt");
+ function tick(now){requestAnimationFrame(tick);if(!$("#v-build").classList.contains("on"))return;
+  const dt=Math.min(.05,(now-last)/1000);last=now;
+  if(!O.drag){B.idle+=dt;if(B.idle>6)O.th+=dt*.06;}
+  order.forEach(p=>{const tgt=B.cur>=p.step?1:0;p.k+=Math.sign(tgt-p.k)*Math.min(Math.abs(tgt-p.k),dt/.9);const e=ease(p.k);
+   if(p.cable){p.obj.visible=e>.002&&B.ex<.12;const segs=Math.floor(e*160);p.cable.geo.setDrawRange(0,segs*60);
+    const t=Math.max(.003,Math.min(1,e)),pos=p.cable.curve.getPointAt(t);p.cable.head.position.copy(pos);p.cable.head.lookAt(pos.clone().add(p.cable.curve.getTangentAt(t)));return;}
+   p.obj.visible=e>.002;p.obj.position.copy(p.home).addScaledVector(p.dir,1-e).addScaledVector(p.ex,B.ex);
+   const f=Math.min(1,e*1.6);p.mats.forEach(m=>{m.opacity=m.userData.base*f;m.transparent=f<1||m.userData.base<1;m.depthWrite=m.userData.base>=1;
+    if(!m.userData.glow&&m.emissive)m.emissive.setHex(B.sel===p.id?0x0d4050:0);});});
+  const pw=ease(parts.power.k);
+  spin.forEach((r,i)=>r.rotation.z+=dt*pw*(10+(i%3)*4));
+  glow.forEach(g=>{if(g.rgb)g.m.emissive.setHSL((now/5000+g.ph)%1,1,.5);g.m.emissiveIntensity=pw*g.i;});
+  psuSw.rotation.x=pw*.6;inner.intensity=pw*1.4;inner.color.setHSL((now/5000)%1,.8,.6);
+  const fp=parts[B.sel||B.focus];
+  if(fp&&fp.k>.3&&B.ex<.12){const v=fp.label.clone().add(fp.obj.position).project(C);
+   if(v.z<1){lbl.style.display="block";lbl.style.transform=`translate(${(v.x+1)/2*host.clientWidth}px,${(1-v.y)/2*host.clientHeight}px)`;ltxt.textContent=STEPS.find(s=>s.p===fp.id).t;}else lbl.style.display="none";}
+  else lbl.style.display="none";
+  place();R.render(S,C);}
+ requestAnimationFrame(tick);
+ go(0,"build");setTimeout(()=>play(1),700);
+}
+
+/* ============ ROUTER ============ */
+function route(){const v=(location.hash||"#calc").slice(1);const ok=["calc","hardware","prices","build"].includes(v)?v:"calc";
+ document.querySelectorAll(".view").forEach(s=>s.classList.toggle("on",s.id==="v-"+ok));
+ document.querySelectorAll("nav a").forEach(a=>a.classList.toggle("on",a.dataset.v===ok));
+ if(ok==="hardware"){PR=sizeCanvas(cv);}
+ if(ok==="prices"){CR=sizeCanvas(ch);animChart();}
+ if(ok==="calc")renderCalc();
+ if(ok==="build")initBuild();}
+window.addEventListener("hashchange",route);
+window.addEventListener("resize",()=>{PR=sizeCanvas(cv);CR=sizeCanvas(ch);drawChart(1);});
+
+/* ============ BOOT ============ */
+if(!CanvasRenderingContext2D.prototype.roundRect){CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){this.moveTo(x+r,y);this.arcTo(x+w,y,x+w,y+h,r);this.arcTo(x+w,y+h,x,y+h,r);this.arcTo(x,y+h,x,y,r);this.arcTo(x,y,x+w,y,r);this.closePath();};}
+fillArch();syncSliders();renderSpec();renderChips();renderSnap();buildTicker();renderSim();route();requestAnimationFrame(drawPipe);loadFeed();
+</script>
+</body>
+</html>

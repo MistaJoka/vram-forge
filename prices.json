@@ -1,0 +1,320 @@
+{
+ "schema": 1,
+ "generated_at": "2026-11-05",
+ "items": {
+  "3090": {
+   "price": 1463,
+   "as_of": "2026-09",
+   "sources": [
+    {
+     "name": "openclawdc",
+     "url": "https://openclawdc.com/blog/is-a-used-rtx-3090-worth-it-local-llm/"
+    }
+   ],
+   "hist": [
+    [
+     "2020-09",
+     1499
+    ],
+    [
+     "2025-06",
+     900
+    ],
+    [
+     "2026-05",
+     1050
+    ],
+    [
+     "2026-07",
+     1275
+    ],
+    [
+     "2026-08",
+     1250
+    ],
+    [
+     "2026-09",
+     1463
+    ]
+   ]
+  },
+  "4090": {
+   "price": 2200,
+   "as_of": "2026",
+   "sources": [
+    {
+     "name": "tech-insider",
+     "url": "https://tech-insider.org/?p=15714"
+    }
+   ],
+   "hist": [
+    [
+     "2022-10",
+     1599
+    ],
+    [
+     "2026-03",
+     2200
+    ]
+   ]
+  },
+  "5080": {
+   "price": 1596,
+   "as_of": "2026-10",
+   "sources": [
+    {
+     "name": "gpupoet",
+     "url": "https://gpupoet.com/gpu/learn/price/october-2026/nvidia-geforce-rtx-5080"
+    }
+   ],
+   "hist": [
+    [
+     "2025-01",
+     999
+    ],
+    [
+     "2026-02",
+     1400
+    ],
+    [
+     "2026-08",
+     1500
+    ],
+    [
+     "2026-10",
+     1596
+    ]
+   ]
+  },
+  "5090": {
+   "price": 4930,
+   "as_of": "2026-09",
+   "sources": [
+    {
+     "name": "capitalandcompute",
+     "url": "https://capitalandcompute.net/gpu-prices/nvidia/"
+    }
+   ],
+   "hist": [
+    [
+     "2025-01",
+     1999
+    ],
+    [
+     "2026-01",
+     3016
+    ],
+    [
+     "2026-02",
+     3600
+    ],
+    [
+     "2026-04",
+     3777
+    ],
+    [
+     "2026-08",
+     4830
+    ],
+    [
+     "2026-09",
+     4930
+    ]
+   ]
+  },
+  "5060ti": {
+   "price": 805,
+   "as_of": "2026-08",
+   "sources": [
+    {
+     "name": "digitalcitizen",
+     "url": "https://www.digitalcitizen.life/nvidia-rtx-5060-ti-16gb-median-price-reaches-805-as-rtx-50-series-costs-keep-rising/"
+    }
+   ],
+   "hist": [
+    [
+     "2025-04",
+     429
+    ],
+    [
+     "2026-02",
+     540
+    ],
+    [
+     "2026-06",
+     570
+    ],
+    [
+     "2026-08",
+     805
+    ]
+   ]
+  },
+  "5070ti": {
+   "price": 1100,
+   "as_of": "2026-08",
+   "sources": [
+    {
+     "name": "digitalcitizen",
+     "url": "https://www.digitalcitizen.life/nvidia-rtx-5060-ti-16gb-median-price-reaches-805-as-rtx-50-series-costs-keep-rising/"
+    }
+   ],
+   "hist": [
+    [
+     "2025-02",
+     749
+    ],
+    [
+     "2026-02",
+     950
+    ],
+    [
+     "2026-06",
+     1100
+    ],
+    [
+     "2026-08",
+     1100
+    ]
+   ]
+  },
+  "pro6000": {
+   "price": 10000,
+   "as_of": "2026-06",
+   "sources": [
+    {
+     "name": "wccftech / codersera",
+     "url": "https://codersera.com/blog/local-llm-hardware-showdown-june-2026/"
+    }
+   ],
+   "hist": [
+    [
+     "2025-10",
+     8500
+    ],
+    [
+     "2026-06",
+     10000
+    ]
+   ]
+  },
+  "strix": {
+   "price": 3500,
+   "as_of": "2026-10",
+   "sources": [
+    {
+     "name": "openclawdc",
+     "url": "https://openclawdc.com/blog/ryzen-ai-max-395-alternative-local-llm/"
+    }
+   ],
+   "hist": [
+    [
+     "2025-10",
+     2099
+    ],
+    [
+     "2026-04",
+     3299
+    ],
+    [
+     "2026-10",
+     3500
+    ]
+   ]
+  },
+  "spark": {
+   "price": 4699,
+   "as_of": "2026-06",
+   "sources": [
+    {
+     "name": "wccftech / codersera",
+     "url": "https://codersera.com/blog/local-llm-hardware-showdown-june-2026/"
+    }
+   ],
+   "hist": [
+    [
+     "2025-10",
+     3999
+    ],
+    [
+     "2026-06",
+     4699
+    ]
+   ]
+  },
+  "macm5": {
+   "price": 5099,
+   "as_of": "2026-10",
+   "sources": [
+    {
+     "name": "openclawdc",
+     "url": "https://openclawdc.com/blog/ryzen-ai-max-395-alternative-local-llm/"
+    }
+   ],
+   "hist": [
+    [
+     "2026-10",
+     5099
+    ]
+   ]
+  },
+  "ddr5": {
+   "price": 450,
+   "as_of": "2026-10",
+   "sources": [
+    {
+     "name": "tech-insider (via Tom's Hardware)",
+     "url": "https://tech-insider.org/ddr5-ram-price-450-ai-shortage-2026/"
+    }
+   ],
+   "hist": [
+    [
+     "2025-01",
+     100
+    ],
+    [
+     "2025-07",
+     72
+    ],
+    [
+     "2025-11",
+     330
+    ],
+    [
+     "2026-10",
+     450
+    ]
+   ]
+  },
+  "nvme": {
+   "price": 329,
+   "as_of": "2026-10",
+   "sources": [
+    {
+     "name": "computingforgeeks",
+     "url": "https://computingforgeeks.com/?p=178451"
+    }
+   ],
+   "hist": [
+    [
+     "2025-10",
+     129
+    ],
+    [
+     "2026-08",
+     302
+    ],
+    [
+     "2026-10",
+     329
+    ]
+   ]
+  }
+ },
+ "signal": {
+  "generated_at": "",
+  "window_days": 30,
+  "items": {}
+ },
+ "held": []
+}

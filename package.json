@@ -1,0 +1,11 @@
+{
+  "name": "vram-forge",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "python3 -m unittest discover -s tests -t . && node --test tests/page.test.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.64.1"
+  }
+}

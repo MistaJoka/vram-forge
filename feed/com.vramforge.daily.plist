@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Daily VRAM Forge price update. If the Mac is asleep at the scheduled time,
+  launchd runs the job once on wake. Paths assume the repo at
+  /Users/andraewilliams/Projects/apps/vram-forge.
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.vramforge.daily</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/andraewilliams/Projects/apps/vram-forge/feed/run_daily.sh</string>
+    </array>
+    <key>WorkingDirectory</key>
+    <string>/Users/andraewilliams/Projects/apps/vram-forge</string>
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>7</integer>
+        <key>Minute</key>
+        <integer>30</integer>
+    </dict>
+    <key>StandardOutPath</key>
+    <string>/Users/andraewilliams/Projects/apps/vram-forge/feed/work/daily.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/andraewilliams/Projects/apps/vram-forge/feed/work/daily.log</string>
+</dict>
+</plist>
