@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-05",
+ "generated_at": "2026-11-07",
  "held": [],
  "items": {
   "3090": {
@@ -321,16 +321,26 @@
  },
  "schema": 1,
  "signal": {
-  "generated_at": "2026-11-05T15:50:21.715121+00:00",
+  "generated_at": "2026-11-07T12:42:23.790882+00:00",
   "items": {
    "3090": {
     "used": {
-     "high": 1500.0,
-     "last_seen": "2026-11-05",
-     "low": 1500.0,
+     "high": 1600.0,
+     "last_seen": "2026-11-07",
+     "low": 1200.0,
      "median": 1500.0,
-     "n": 2,
+     "n": 4,
      "samples": [
+      {
+       "date": "2026-11-07",
+       "price": 1600.0,
+       "url": "https://www.reddit.com/r/hardwareswap/comments/1xq0e75/usanj_h_zotac_rtx_3090_trinity_oc_w_paypal/"
+      },
+      {
+       "date": "2026-11-06",
+       "price": 1200.0,
+       "url": "https://www.reddit.com/r/hardwareswap/comments/1xprs7u/usawa_h_asus_rog_strix_3090_gaming_oc_w_paypal/"
+      },
       {
        "date": "2026-11-05",
        "price": 1500.0,
@@ -340,6 +350,64 @@
        "date": "2026-11-05",
        "price": 1500.0,
        "url": "https://www.reddit.com/r/hardwareswap/comments/1xok4zn/usamo_h_3090_fe_w_cash_paypal/"
+      }
+     ]
+    }
+   },
+   "5080": {
+    "used": {
+     "high": 2000.0,
+     "last_seen": "2026-11-06",
+     "low": 1800.0,
+     "median": 2000.0,
+     "n": 3,
+     "samples": [
+      {
+       "date": "2026-11-06",
+       "price": 1800.0,
+       "url": "https://www.reddit.com/r/hardwareswap/comments/1xpk9pa/usaor_h_asus_tuf_5080_w_local_cash/"
+      },
+      {
+       "date": "2026-11-06",
+       "price": 2000.0,
+       "url": "https://www.reddit.com/r/hardwareswap/comments/1xpjuvp/usaca_h_pny_rtx_5080_oc_w_paypal_local_cash/"
+      },
+      {
+       "date": "2026-11-06",
+       "price": 2000.0,
+       "url": "https://www.reddit.com/r/hardwareswap/comments/1xovvpx/usade_h_slightly_used_asus_prime_rtx_5080_oc_w/"
+      }
+     ]
+    }
+   },
+   "5090": {
+    "used": {
+     "high": 4300.0,
+     "last_seen": "2026-11-07",
+     "low": 4300.0,
+     "median": 4300.0,
+     "n": 1,
+     "samples": [
+      {
+       "date": "2026-11-07",
+       "price": 4300.0,
+       "url": "https://www.reddit.com/r/hardwareswap/comments/1xpuipj/usauth_nvidia_5090_founders_edition_w_5080/"
+      }
+     ]
+    }
+   },
+   "ddr5": {
+    "new_deal": {
+     "high": 399.99,
+     "last_seen": "2026-11-05",
+     "low": 399.99,
+     "median": 399.99,
+     "n": 1,
+     "samples": [
+      {
+       "date": "2026-11-05",
+       "price": 399.99,
+       "url": "https://www.reddit.com/r/buildapcsales/comments/1xmkxkc/ram_microcenter_in_store_only_gskill_flare_x5/"
       }
      ]
     }
