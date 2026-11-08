@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-07",
+ "generated_at": "2026-11-08",
  "held": [],
  "items": {
   "3090": {
@@ -321,16 +321,26 @@
  },
  "schema": 1,
  "signal": {
-  "generated_at": "2026-11-07T12:42:23.790882+00:00",
+  "generated_at": "2026-11-08T12:34:27.389963+00:00",
   "items": {
    "3090": {
     "used": {
      "high": 1600.0,
-     "last_seen": "2026-11-07",
+     "last_seen": "2026-11-08",
      "low": 1200.0,
      "median": 1500.0,
-     "n": 4,
+     "n": 6,
      "samples": [
+      {
+       "date": "2026-11-08",
+       "price": 1500.0,
+       "url": "https://www.reddit.com/r/hardwareswap/comments/1xqmatg/usaca_h_asus_rog_strix_rtx_3090_w_local_cash/"
+      },
+      {
+       "date": "2026-11-08",
+       "price": 1600.0,
+       "url": "https://www.reddit.com/r/hardwareswap/comments/1xqkk06/usany_h_nvidia_rtx_3090_founders_edition_w_local/"
+      },
       {
        "date": "2026-11-07",
        "price": 1600.0,
@@ -345,23 +355,23 @@
        "date": "2026-11-05",
        "price": 1500.0,
        "url": "https://www.reddit.com/r/hardwareswap/comments/1xom2b2/usail_h_evga_rtx_3090_ftw3_w_local_cashpaypal_gs/"
-      },
-      {
-       "date": "2026-11-05",
-       "price": 1500.0,
-       "url": "https://www.reddit.com/r/hardwareswap/comments/1xok4zn/usamo_h_3090_fe_w_cash_paypal/"
       }
      ]
     }
    },
    "5080": {
     "used": {
-     "high": 2000.0,
-     "last_seen": "2026-11-06",
+     "high": 2650.0,
+     "last_seen": "2026-11-07",
      "low": 1800.0,
      "median": 2000.0,
-     "n": 3,
+     "n": 4,
      "samples": [
+      {
+       "date": "2026-11-07",
+       "price": 2650.0,
+       "url": "https://www.reddit.com/r/hardwareswap/comments/1xq6ke8/usaco_h_asus_nvidia_geforce_rtx_5080_astral_oc/"
+      },
       {
        "date": "2026-11-06",
        "price": 1800.0,
@@ -410,16 +420,35 @@
        "url": "https://www.reddit.com/r/buildapcsales/comments/1xmkxkc/ram_microcenter_in_store_only_gskill_flare_x5/"
       }
      ]
+    },
+    "used": {
+     "high": 400.0,
+     "last_seen": "2026-11-08",
+     "low": 400.0,
+     "median": 400.0,
+     "n": 1,
+     "samples": [
+      {
+       "date": "2026-11-08",
+       "price": 400.0,
+       "url": "https://www.reddit.com/r/hardwareswap/comments/1xqjac8/usaca_h_sk_hynix_32gb_2x16gb_ddr5_5600mhz_sodimm/"
+      }
+     ]
     }
    },
    "nvme": {
     "used": {
-     "high": 275.0,
-     "last_seen": "2026-11-05",
+     "high": 425.0,
+     "last_seen": "2026-11-08",
      "low": 275.0,
-     "median": 275.0,
-     "n": 1,
+     "median": 350.0,
+     "n": 2,
      "samples": [
+      {
+       "date": "2026-11-08",
+       "price": 425.0,
+       "url": "https://www.reddit.com/r/hardwareswap/comments/1xqk9pk/usanyh_2tb_intel_ssd_dc_p4600_series_w_paypal/"
+      },
       {
        "date": "2026-11-05",
        "price": 275.0,
