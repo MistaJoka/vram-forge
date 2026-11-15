@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-14",
+ "generated_at": "2026-11-15",
  "held": [],
  "items": {
   "3090": {
@@ -321,16 +321,26 @@
  },
  "schema": 1,
  "signal": {
-  "generated_at": "2026-11-14T12:30:03.400786+00:00",
+  "generated_at": "2026-11-15T12:30:01.244544+00:00",
   "items": {
    "3090": {
     "used": {
      "high": 1600.0,
-     "last_seen": "2026-11-13",
+     "last_seen": "2026-11-14",
      "low": 1200.0,
      "median": 1500.0,
-     "n": 11,
+     "n": 13,
      "samples": [
+      {
+       "date": "2026-11-14",
+       "price": 1500.0,
+       "url": "https://www.reddit.com/r/hardwareswap/comments/1xwcw43/usanj_h_zotac_rtx_3090_trinity_oc_w_paypal/"
+      },
+      {
+       "date": "2026-11-14",
+       "price": 1400.0,
+       "url": "https://www.reddit.com/r/hardwareswap/comments/1xwajut/usacah_3090_fe_w_paypal_cash/"
+      },
       {
        "date": "2026-11-13",
        "price": 1400.0,
@@ -345,16 +355,6 @@
        "date": "2026-11-11",
        "price": 1600.0,
        "url": "https://www.reddit.com/r/hardwareswap/comments/1xtaa50/usanj_h_zotac_rtx_3090_trinity_oc_w_paypal/"
-      },
-      {
-       "date": "2026-11-10",
-       "price": 1425.0,
-       "url": "https://www.reddit.com/r/hardwareswap/comments/1xsssq3/usamih_evga_geforce_rtx_3090_ftw3_ultra_24gb_w/"
-      },
-      {
-       "date": "2026-11-10",
-       "price": 1500.0,
-       "url": "https://www.reddit.com/r/hardwareswap/comments/1xsdson/usaca_h_asus_rog_strix_rtx_3090_w_local_cash/"
       }
      ]
     }
@@ -469,11 +469,16 @@
    "5080": {
     "used": {
      "high": 2650.0,
-     "last_seen": "2026-11-14",
+     "last_seen": "2026-11-15",
      "low": 1600.0,
-     "median": 1825.0,
-     "n": 10,
+     "median": 1800.0,
+     "n": 11,
      "samples": [
+      {
+       "date": "2026-11-15",
+       "price": 1725.0,
+       "url": "https://www.reddit.com/r/hardwareswap/comments/1xwhue8/usanj_h_gigabyte_5080_windforce_v1_w_paypal/"
+      },
       {
        "date": "2026-11-14",
        "price": 1600.0,
@@ -493,11 +498,6 @@
        "date": "2026-11-11",
        "price": 1700.0,
        "url": "https://www.reddit.com/r/hardwareswap/comments/1xt9e1y/usatn_h_brand_new_pny_5080_w_paypal_local_cash/"
-      },
-      {
-       "date": "2026-11-10",
-       "price": 2000.0,
-       "url": "https://www.reddit.com/r/hardwareswap/comments/1xsphb7/usaca_h_pny_rtx_5080_oc_w_paypal_local_cash/"
       }
      ]
     }
@@ -534,12 +534,22 @@
      ]
     },
     "used": {
-     "high": 450.0,
-     "last_seen": "2026-11-14",
-     "low": 345.0,
+     "high": 475.0,
+     "last_seen": "2026-11-15",
+     "low": 300.0,
      "median": 380.0,
-     "n": 6,
+     "n": 8,
      "samples": [
+      {
+       "date": "2026-11-15",
+       "price": 300.0,
+       "url": "https://www.reddit.com/r/hardwareswap/comments/1xwtw0q/usawih_samsung_32gb_5600mhz_ddr5_sodimm_w_paypal/"
+      },
+      {
+       "date": "2026-11-14",
+       "price": 475.0,
+       "url": "https://www.reddit.com/r/hardwareswap/comments/1xwfnse/usaid_h_gskill_trident_z5_rgb_32gb_2x16gb/"
+      },
       {
        "date": "2026-11-14",
        "price": 450.0,
@@ -554,16 +564,6 @@
        "date": "2026-11-10",
        "price": 380.0,
        "url": "https://www.reddit.com/r/hardwareswap/comments/1xst9rb/usaflh32gb_ddr56400_corsair_vengeance_rgb/"
-      },
-      {
-       "date": "2026-11-09",
-       "price": 350.0,
-       "url": "https://www.reddit.com/r/hardwareswap/comments/1xrglmg/usacah_samsung_ddr5_sodimm_32gb_2x16gb_4800/"
-      },
-      {
-       "date": "2026-11-09",
-       "price": 345.0,
-       "url": "https://www.reddit.com/r/hardwareswap/comments/1xrge0s/usanyh_corsair_vengeance_32gb_2x16_ddr5_ram/"
       }
      ]
     }
